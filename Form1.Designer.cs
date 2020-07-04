@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.OpenImgBtn = new System.Windows.Forms.Button();
             this.OpenConvertedBtn = new System.Windows.Forms.Button();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
@@ -39,6 +40,9 @@
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.subPicBox = new System.Windows.Forms.PictureBox();
             this.subPicLabel = new System.Windows.Forms.Label();
+            this.MainPicLabel = new System.Windows.Forms.Label();
+            this.progBar = new System.Windows.Forms.ProgressBar();
+            this.progInfoLbl = new System.Windows.Forms.Label();
             this.OptionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
@@ -62,6 +66,7 @@
             this.OpenConvertedBtn.TabIndex = 1;
             this.OpenConvertedBtn.Text = "Find Converted Images";
             this.OpenConvertedBtn.UseVisualStyleBackColor = true;
+            this.OpenConvertedBtn.Click += new System.EventHandler(this.OpenConvertedBtn_Click);
             // 
             // OptionsGroupBox
             // 
@@ -111,42 +116,72 @@
             // 
             // pictureBox
             // 
-            this.pictureBox.Location = new System.Drawing.Point(655, 25);
+            this.pictureBox.Location = new System.Drawing.Point(719, 22);
             this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(329, 245);
+            this.pictureBox.Size = new System.Drawing.Size(320, 240);
             this.pictureBox.TabIndex = 3;
             this.pictureBox.TabStop = false;
             // 
             // subPicBox
             // 
-            this.subPicBox.Location = new System.Drawing.Point(904, 316);
+            this.subPicBox.Location = new System.Drawing.Point(362, 22);
             this.subPicBox.Name = "subPicBox";
-            this.subPicBox.Size = new System.Drawing.Size(80, 80);
+            this.subPicBox.Size = new System.Drawing.Size(222, 211);
             this.subPicBox.TabIndex = 4;
             this.subPicBox.TabStop = false;
+            this.subPicBox.Click += new System.EventHandler(this.subPicBox_Click);
             // 
             // subPicLabel
             // 
             this.subPicLabel.AutoSize = true;
-            this.subPicLabel.Location = new System.Drawing.Point(805, 316);
+            this.subPicLabel.Location = new System.Drawing.Point(263, 13);
             this.subPicLabel.Name = "subPicLabel";
             this.subPicLabel.Size = new System.Drawing.Size(93, 25);
             this.subPicLabel.TabIndex = 5;
             this.subPicLabel.Text = "Sub-Pic:";
             // 
+            // MainPicLabel
+            // 
+            this.MainPicLabel.AutoSize = true;
+            this.MainPicLabel.Location = new System.Drawing.Point(612, 22);
+            this.MainPicLabel.Name = "MainPicLabel";
+            this.MainPicLabel.Size = new System.Drawing.Size(101, 25);
+            this.MainPicLabel.TabIndex = 6;
+            this.MainPicLabel.Text = "Main Pic:";
+            // 
+            // progBar
+            // 
+            this.progBar.Location = new System.Drawing.Point(12, 595);
+            this.progBar.Name = "progBar";
+            this.progBar.Size = new System.Drawing.Size(572, 65);
+            this.progBar.TabIndex = 7;
+            // 
+            // progInfoLbl
+            // 
+            this.progInfoLbl.AutoSize = true;
+            this.progInfoLbl.Location = new System.Drawing.Point(12, 567);
+            this.progInfoLbl.Name = "progInfoLbl";
+            this.progInfoLbl.Size = new System.Drawing.Size(139, 25);
+            this.progInfoLbl.TabIndex = 8;
+            this.progInfoLbl.Text = "Progress Info";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1590, 655);
+            this.ClientSize = new System.Drawing.Size(1838, 744);
+            this.Controls.Add(this.progInfoLbl);
+            this.Controls.Add(this.progBar);
+            this.Controls.Add(this.MainPicLabel);
             this.Controls.Add(this.subPicLabel);
             this.Controls.Add(this.subPicBox);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.OptionsGroupBox);
             this.Controls.Add(this.OpenConvertedBtn);
             this.Controls.Add(this.OpenImgBtn);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "HD Picture Viewer Converter 2";
             this.OptionsGroupBox.ResumeLayout(false);
             this.OptionsGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
@@ -168,6 +203,9 @@
         private System.Windows.Forms.PictureBox pictureBox;
         private System.Windows.Forms.PictureBox subPicBox;
         private System.Windows.Forms.Label subPicLabel;
+        private System.Windows.Forms.Label MainPicLabel;
+        private System.Windows.Forms.ProgressBar progBar;
+        private System.Windows.Forms.Label progInfoLbl;
     }
 }
 
