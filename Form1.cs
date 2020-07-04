@@ -192,12 +192,16 @@ namespace HDPictureViewerConverter
                     {
                         if (width == 320 || height == 240)
                             errors += "Information: \"" + filename + "\" already has dimesnions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n\n";
-
-                        img = ResizeImage(img, 320, 240);
-                        pictureBox.Width = 320;
-                        pictureBox.Height = 240;
-                        pictureBox.Image = img;
+                        else
+                            img = ResizeImage(img, 320, 240);
+                        width = 320;
+                        height = 240;
+                        pictureBox.Width = img.Width;
+                        pictureBox.Height = img.Height;
+                        pictureBox.Image = (Image) img;
+                        //img.Save(@"stretched.png");
                     }
+
                     if (width * height > 3000000)
                         errors += "Warning: \"" + filename + "\" is incredibly large (" + width * height + " bytes) and will likely not fit on the calculator! Please make the file under 3,000,000 bytes or use the resizing tools provided in this application.\n\n";
 
@@ -273,8 +277,6 @@ namespace HDPictureViewerConverter
                     for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                         for (horizOffset = 0; horizOffset < horizSquares; horizOffset++) 
                         {
-                            
-
                             saveName = AppDir + @"bin\" + filename + @"\";
 
                             cropRect.X = horizOffset*80;

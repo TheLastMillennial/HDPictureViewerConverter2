@@ -74,10 +74,10 @@
             this.OptionsGroupBox.Controls.Add(this.resizeComboBox);
             this.OptionsGroupBox.Location = new System.Drawing.Point(12, 239);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
-            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 325);
+            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 132);
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
-            this.OptionsGroupBox.Text = "Advanced Options";
+            this.OptionsGroupBox.Text = "Options";
             // 
             // label1
             // 
@@ -151,7 +151,7 @@
             // 
             // progBar
             // 
-            this.progBar.Location = new System.Drawing.Point(12, 595);
+            this.progBar.Location = new System.Drawing.Point(11, 419);
             this.progBar.Name = "progBar";
             this.progBar.Size = new System.Drawing.Size(572, 65);
             this.progBar.TabIndex = 7;
@@ -159,7 +159,7 @@
             // progInfoLbl
             // 
             this.progInfoLbl.AutoSize = true;
-            this.progInfoLbl.Location = new System.Drawing.Point(12, 567);
+            this.progInfoLbl.Location = new System.Drawing.Point(11, 391);
             this.progInfoLbl.Name = "progInfoLbl";
             this.progInfoLbl.Size = new System.Drawing.Size(139, 25);
             this.progInfoLbl.TabIndex = 8;
