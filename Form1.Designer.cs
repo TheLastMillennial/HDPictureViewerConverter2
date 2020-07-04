@@ -37,8 +37,11 @@
             this.AllToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.selectImagesDialog = new System.Windows.Forms.OpenFileDialog();
             this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.subPicBox = new System.Windows.Forms.PictureBox();
+            this.subPicLabel = new System.Windows.Forms.Label();
             this.OptionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
             this.SuspendLayout();
             // 
             // OpenImgBtn
@@ -114,11 +117,30 @@
             this.pictureBox.TabIndex = 3;
             this.pictureBox.TabStop = false;
             // 
+            // subPicBox
+            // 
+            this.subPicBox.Location = new System.Drawing.Point(904, 316);
+            this.subPicBox.Name = "subPicBox";
+            this.subPicBox.Size = new System.Drawing.Size(80, 80);
+            this.subPicBox.TabIndex = 4;
+            this.subPicBox.TabStop = false;
+            // 
+            // subPicLabel
+            // 
+            this.subPicLabel.AutoSize = true;
+            this.subPicLabel.Location = new System.Drawing.Point(805, 316);
+            this.subPicLabel.Name = "subPicLabel";
+            this.subPicLabel.Size = new System.Drawing.Size(93, 25);
+            this.subPicLabel.TabIndex = 5;
+            this.subPicLabel.Text = "Sub-Pic:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1001, 655);
+            this.ClientSize = new System.Drawing.Size(1590, 655);
+            this.Controls.Add(this.subPicLabel);
+            this.Controls.Add(this.subPicBox);
             this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.OptionsGroupBox);
             this.Controls.Add(this.OpenConvertedBtn);
@@ -128,7 +150,9 @@
             this.OptionsGroupBox.ResumeLayout(false);
             this.OptionsGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -142,6 +166,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.OpenFileDialog selectImagesDialog;
         private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.PictureBox subPicBox;
+        private System.Windows.Forms.Label subPicLabel;
     }
 }
 
