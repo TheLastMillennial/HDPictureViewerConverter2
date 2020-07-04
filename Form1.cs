@@ -194,8 +194,8 @@ namespace HDPictureViewerConverter
                             errors += "Information: \"" + filename + "\" already has dimesnions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n\n";
 
                         img = ResizeImage(img, 320, 240);
-                        pictureBox.Width = img.Width;
-                        pictureBox.Height = img.Height;
+                        pictureBox.Width = 320;
+                        pictureBox.Height = 240;
                         pictureBox.Image = img;
                     }
                     if (width * height > 3000000)
@@ -229,35 +229,20 @@ namespace HDPictureViewerConverter
                         gfx.FillRectangle(brush, 0, 0, 80 * horizSquares, 80 * vertSquares);
                     }
                     progress(1);
-                    //subPicBox.Image = backgroundimg;
 
-                    //Image backgroundimg= Image.FromFile("blackSquare.bmp");
-                    //uses 40 instead of 80 because of strange resizing bug
-                    //backgroundimg = ResizeImage(backgroundimg, horizSquares * 80, vertSquares * 80);
-
-
-                    //Overlays the images
-                    /*Image finalImage = new Bitmap(backgroundimg.Width, backgroundimg.Height);
-                    using (Graphics gr = Graphics.FromImage(finalImage))
-                    {
-                        gr.DrawImage(backgroundimg, new Point(0, 0));
-                        gr.DrawImage(img, new Point(0, 0));
-                    }
-                    finalImage.Save("output.png", ImageFormat.Png);
-                    pictureBox.Image = finalImage;
-                    finalImage = img;*/
-                    Bitmap baseImage = backgroundimg, overlayImage = (Bitmap)img;
+                    Image firstImage = img, secondImage = backgroundimg;
                     var finalImage = new Bitmap(80 * horizSquares, 80 * vertSquares);
                     if ((double)width/80 != Math.Ceiling(width/80) || (double)height / 80 != Math.Ceiling(height / 80))
                     {
-                       
+                        using (Graphics graphics = Graphics.FromImage(finalImage))
+                        {
+                            graphics.DrawImage(firstImage, new Rectangle(new Point(), firstImage.Size),
+                                new Rectangle(new Point(), firstImage.Size), GraphicsUnit.Pixel);
+                            graphics.DrawImage(secondImage, new Rectangle(new Point(0, firstImage.Height + 1), secondImage.Size),
+                                new Rectangle(new Point(), secondImage.Size), GraphicsUnit.Pixel);
+                        }
 
-                        var graphics = Graphics.FromImage(finalImage);
-                        graphics.CompositingMode = CompositingMode.SourceOver;
 
-                        graphics.DrawImage(baseImage, 0, 0);
-                        graphics.DrawImage(overlayImage, 0, 0);
-                        pictureBox.Image = finalImage;
                     }
                     else
                     {
@@ -265,11 +250,6 @@ namespace HDPictureViewerConverter
                     }
                     progress(2);
                     
-
-
-                    /*****************************************************************************************************************/
-                    //                                       BUG: Image gets resized too small
-                    /*****************************************************************************************************************/
                     //show in a winform picturebox used 
                     pictureBox.Width = 80 * horizSquares;
                     pictureBox.Height = 80 * vertSquares;
