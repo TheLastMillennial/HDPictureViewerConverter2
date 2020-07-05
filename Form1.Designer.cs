@@ -1,6 +1,6 @@
 ﻿namespace HDPictureViewerConverter
 {
-    partial class Form1
+    partial class HDpicConverterForm
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HDpicConverterForm));
             this.OpenImgBtn = new System.Windows.Forms.Button();
             this.OpenConvertedBtn = new System.Windows.Forms.Button();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
@@ -50,6 +50,7 @@
             // 
             // OpenImgBtn
             // 
+            this.OpenImgBtn.AllowDrop = true;
             this.OpenImgBtn.Location = new System.Drawing.Point(12, 13);
             this.OpenImgBtn.Name = "OpenImgBtn";
             this.OpenImgBtn.Size = new System.Drawing.Size(205, 97);
@@ -165,7 +166,7 @@
             this.progInfoLbl.TabIndex = 8;
             this.progInfoLbl.Text = "Progress Info";
             // 
-            // Form1
+            // HDpicConverterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -180,7 +181,7 @@
             this.Controls.Add(this.OpenConvertedBtn);
             this.Controls.Add(this.OpenImgBtn);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Form1";
+            this.Name = "HDpicConverterForm";
             this.Text = "HD Picture Viewer Converter 2";
             this.OptionsGroupBox.ResumeLayout(false);
             this.OptionsGroupBox.PerformLayout();

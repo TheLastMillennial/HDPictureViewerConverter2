@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -10,14 +11,15 @@ using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace HDPictureViewerConverter
 {
-    public partial class Form1 : Form
+    public partial class HDpicConverterForm : Form
     {
-        public Form1()
+        public HDpicConverterForm()
         {
             InitializeComponent();
             SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory,"Brian");
@@ -85,6 +87,12 @@ namespace HDPictureViewerConverter
             progBar.Maximum = m;
             progBar.Value = v;
         }
+        public static Boolean isAlphaNumeric(string strToCheck)
+        {
+            Regex rg = new Regex(@"^[A-Z0-9\s,]*$");
+            return rg.IsMatch(strToCheck);
+        }
+
         //User clicked 'Open Images to Convert'
         private void OpenImgBtn_Click(object sender, EventArgs e)
         {
@@ -103,6 +111,9 @@ namespace HDPictureViewerConverter
 
                 subPicLabel.Visible = true;
                 subPicBox.Visible = true;
+
+                
+                
                 foreach (String File in selectImagesDialog.FileNames)
                 {
                     //Sets progress bar
@@ -269,7 +280,16 @@ namespace HDPictureViewerConverter
                     Rectangle cropRect = new Rectangle(0,0,80,80);
                     //Bitmap src = Image.FromFile(File) as Bitmap;
                     Bitmap target = new Bitmap(cropRect.Width, cropRect.Height);
-                    String saveName;
+                    String saveName="";
+                    string input = Interaction.InputBox("Enter two alphanumeric characters (a-z and 0-9).\n" +
+                        "To avoid issues, run the HDPICV program on your calculator, press [mode] and look at the bottom where it says\"Safe Appvar Name\"",
+                        "Enter Appvar Name", "Default");
+                    if (input.Length!=2 || !isAlphaNumeric(input))
+                    {
+                        input = Interaction.InputBox("Error: You did not enter alphanumeric characters!\nEnter two capital alphanumeric characters (A-Z and 0-9).\n" +
+                        "To avoid issues, run the HDPICV program on your calculator, press [mode] and look at the bottom where it says\"Safe Appvar Name\"",
+                        "Enter Appvar Name");
+                    }
                     progress(4);
                     progress(0, vertSquares * horizSquares,"Slicing Image:");
                     //Cuts each 80x80 square
@@ -277,7 +297,7 @@ namespace HDPictureViewerConverter
                     for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                         for (horizOffset = 0; horizOffset < horizSquares; horizOffset++) 
                         {
-                            saveName = AppDir + @"bin\" + filename + @"\";
+                            saveName =  @"bin\" + filename + @"\";
 
                             cropRect.X = horizOffset*80;
                             cropRect.Y = vertOffset*80;
@@ -298,16 +318,73 @@ namespace HDPictureViewerConverter
                             saveName += filename+".png";
                             //MessageBox.Show(saveName);
                             Bitmap save2 = new Bitmap(target);
-                            save2.Save(saveName);
+                            save2.Save(AppDir + saveName);
                             //dispalys progress back to user
                             progress(sliced++);
                             progInfoLbl.Text = "Slicing Image: "+ sliced.ToString() + "/" + vertSquares * horizSquares;
                         }
-                    
 
-            
+
+
+
+                    //Converts using convPNG
+                    string[] iniLines = {"/Leave this alone",
+"#GroupPalette      : image_palette.png",
+"#OutputDirectory : "+AppDir+saveName.Substring(0,saveName.Length-(filename.Length+10))+"*", 
+"#FixedIndexColor   : 0,0,0,0",
+"#FixedIndexColor   : 1,255,255,255",
+"/put your image names here",
+"#PNGImages         :",
+ " "+AppDir+saveName.Substring(0,saveName.Length-(filename.Length+10))+"*",
+
+"/Leave the next 4 lines alone",
+"#GroupC            : gfx",
+"#Palette           : image_palette.png",
+"#FixedIndexColor   : 0,0,0,0",
+"#FixedIndexColor   : 1,255,255,255",
+"/Put your image names here (same as above)",
+"#PNGImages         :",
+ " "+AppDir+saveName.Substring(0,saveName.Length-(filename.Length+10))+"*",
+
+"/name of your output app var (maximum of 8 characters)",
+"#AppvarC         :" +saveName.Substring(saveName.Length-(filename.Length+4)),
+"/This will be at the very beginning of the app var (add underscores to the end to make the whole header 16 chars long)",
+"/Never change the FIRST 8 characters. The LAST 8 characters will be used as the image name in the program.",
+"#OutputHeader      : HDPICCV4"+filename.Substring(0,8),
+"#OutputPalettes    : gfx",
+"/Image name of LEFT image",
+"#PNGImages         :",
+" "+  AppDir + saveName.Substring(0,saveName.Length-(filename.Length+10))+"*",
+
+"#AppvarC         : "+saveName.Substring(0,saveName.Length-(filename.Length+10))+"P",
+"#OutputHeader      : HDPALV1B"+filename.Substring(0,8),
+"#OutputPalettes    : gfx",
+"#PNGImages         :",
+"  image_palette.png"};
+
+
+                    //saves the ini text and runs convpng
+                    try
+                    {
+                        System.IO.File.WriteAllLines(AppDir + @"convpng.ini", iniLines);
+                        //starts the converter application and allows it 30 seconds to convert before erroring out
+                        var convPNGrunning = Process.Start(AppDir + @"windows_convpng.exe");
+                        convPNGrunning.WaitForExit(30000);
+                    }
+                    catch (Exception ex)
+                    {
+
+                        errors+="ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir+"\n\n";
+
+                        return;
+                    }
+
+
                 }
+
                 
+
+
                 subPicLabel.Visible = false;
                 subPicBox.Visible = false;
                 if (errors!=null)
