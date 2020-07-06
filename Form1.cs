@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace HDPictureViewerConverter
 {
     public partial class HDpicConverterForm : Form
@@ -97,6 +98,12 @@ namespace HDPictureViewerConverter
         private void OpenImgBtn_Click(object sender, EventArgs e)
         {
             //Opens the dialog for user to select images to convert
+            if (!convpngReady())
+            {
+                MessageBox.Show("A critical file is missing! Check the red text box for more information!", "ERROR");
+                return;
+            }
+               
             InitializeOpenFileDialog();
             DialogResult Dlg = this.selectImagesDialog.ShowDialog();
             if (Dlg == System.Windows.Forms.DialogResult.OK)
@@ -122,17 +129,59 @@ namespace HDPictureViewerConverter
             convertImg((string[])e.Data.GetData(DataFormats.FileDrop, false));
         }
 
+        //checks if convpng.exe and convpng.ini exists
+        private bool convpngReady()
+        {
+            String AppDir = AppDomain.CurrentDomain.BaseDirectory,errors="";
+            bool ready = true ;
+
+            if (!System.IO.File.Exists(AppDir + @"\windows_convpng.exe"))
+            {
+
+                errors += "ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir + "\n\n";
+                errorsTxtBox.Text += errors;
+                errorsTxtBox.ForeColor = (Color.Red);
+
+                ready = false ;
+            }
+            if (!System.IO.File.Exists(AppDir + @"\convpng.ini"))
+            {
+                try
+                {
+                    File.Create(AppDir + @"\convpng.ini");
+                    errors += "Information: convpng.ini was not found but has been successfully created at the following directory: Due to a bug,this is considered a FAIL. \n" + AppDir + "\n\n";
+                    errorsTxtBox.Text += errors;
+                    errorsTxtBox.ForeColor = (Color.Red);
+                    ready = false;
+                }
+                catch (Exception ex)
+                {
+                    errors += "ERROR: convpng.ini was not found and could not be automatically created at the following directory: \n" + AppDir + "\n\n";
+                    errorsTxtBox.Text += errors;
+                    errorsTxtBox.ForeColor = (Color.Red);
+                    ready = false;
+                }
+            }
+            return ready;
+        }
+
         private void convertImg(String[] f)
         {
+
+
             uint imagesToConvert = 0, imagesConverted = 0;
             double width, height, scale;
             Image img;
             String errors = null, filename;
+            //gets current dir of this program
+            String AppDir = AppDomain.CurrentDomain.BaseDirectory;
 
             subPicLabel.Visible = true;
             subPicBox.Visible = true;
 
-
+            
+            //sets errors box colors to nominal
+            errorsTxtBox.ForeColor = SystemColors.ControlText;
 
             foreach (String File in f)
             {
@@ -143,9 +192,12 @@ namespace HDPictureViewerConverter
                 img = Image.FromFile(File);
                 // Bitmap bmp = (Bitmap)Bitmap.FromFile(File); Unused.
                 filename = Path.GetFileName(File);
+                errorsTxtBox.Text += "\n+ Information: Starting Conversion of " + filename+"\n";
                 if (char.IsDigit(filename[0]))
                 {
                     errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. Your image file name MUST start with a letter. Please rename this file and try again!\n\n";
+                    errorsTxtBox.Text += errors;
+                    errorsTxtBox.ForeColor = (Color.Red);
                     continue;
                 }
                 //Checks if the file is a png. If it's not, convert it to png
@@ -160,18 +212,19 @@ namespace HDPictureViewerConverter
                 //Loads Image
                 width = pictureBox.Width = img.Width;
                 height = pictureBox.Height = img.Height;
+                origDimensionsLbl.Text = "Original Dimensions: " + width + "x" + height;
                 if (width * height >= 100000000)
                 {
                     DialogResult result = MessageBox.Show("\"" + filename + "\" is insanely large and as a result may take a long time to convert or outright crash this program due to high RAM usage.\nNote: Your calculator will most liekly not be able handle such a large image if you did not select to resize it. \nDo you want to continue anyways?", "Warning: Large Image", MessageBoxButtons.YesNo);
                     if (result == DialogResult.No)
                         break;
+                    errors += "Insanely large image conversion manually activated by user.\n\n";
+                    errorsTxtBox.Text += errors;
+                    
                 }
-
 
                 pictureBox.Image = img;
                 progress(1);
-
-
 
                 /* Do not resize image
                 Maintain aspect ratio
@@ -205,6 +258,8 @@ namespace HDPictureViewerConverter
                         {
 
                             errors += "ERROR: \"" + filename + "\" could not be resized. Perhaps the image is too large. Error returned:\n " + ex.ToString() + "\n\n";
+                            errorsTxtBox.Text += errors;
+                            errorsTxtBox.ForeColor = (Color.Red);
                             GC.Collect();
                             GC.WaitForPendingFinalizers();
                             break;
@@ -213,7 +268,7 @@ namespace HDPictureViewerConverter
                         pictureBox.Width = img.Width;
                         pictureBox.Height = img.Height;
                         pictureBox.Image = img;
-                        MessageBox.Show("Height: " + height + "Width: " + width);
+                        //MessageBox.Show("Height: " + height + "Width: " + width);
                     }
 
                 }
@@ -222,7 +277,10 @@ namespace HDPictureViewerConverter
                 if (resizeComboBox.SelectedIndex == 2)
                 {
                     if (width == 320 || height == 240)
+                    {
                         errors += "Information: \"" + filename + "\" already has dimesnions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n\n";
+                        errorsTxtBox.Text += errors;
+                    }
                     else
                         img = ResizeImage(img, 320, 240);
                     width = 320;
@@ -233,29 +291,28 @@ namespace HDPictureViewerConverter
                     //img.Save(@"stretched.png");
                 }
 
+                //checks if image will fit on calculator
                 if (width * height > 3000000)
                     errors += "Warning: \"" + filename + "\" is incredibly large (" + width * height + " bytes) and will likely not fit on the calculator! Please make the file under 3,000,000 bytes or use the resizing tools provided in this application.\n\n";
-
                 else if (width * height > 1000000)
                     errors += "Warning: \"" + filename + "\" is very large (" + width * height + " bytes) and you may need to delete files before you send over this image!\n\n";
 
+                newDimensionsLbl.Text = "New Dimensions: " + width.ToString() + "x" + height.ToString();
                 progress(1);
 
                 progress(0, 4, "Setting up image to slice");
                 //Slicing image
-                //gets current dir of this program
-                String AppDir = AppDomain.CurrentDomain.BaseDirectory;
                 //finds how many 80x80 squares are needed to fit this image
                 int horizSquares = (int)Math.Ceiling(width / 80), horizOffset = 0;
                 int vertSquares = (int)Math.Ceiling(height / 80), vertOffset = 0;
+                squaresLbl.Text = "Squares Used: " + horizSquares.ToString() + "x" + vertSquares.ToString();
 
                 /*
                  * This creates new background image the width and height of the rounded values above.
                  * The actual image will be overlayed on top of it.
-                 * This ensures that the image will be wide and tall enought to fit in all those squares.
+                 * This ensures that the image will be wide and tall enought to exactly fit in all those squares.
                  * It is black so it goes unnoticed in the calc program.
                  */
-
                 Bitmap backgroundimg = new Bitmap(80 * (horizSquares), 80 * (vertSquares), PixelFormat.Format32bppArgb);
 
                 using (Graphics gfx = Graphics.FromImage(backgroundimg))
@@ -276,8 +333,6 @@ namespace HDPictureViewerConverter
                         graphics.DrawImage(secondImage, new Rectangle(new Point(0, firstImage.Height + 1), secondImage.Size),
                             new Rectangle(new Point(), secondImage.Size), GraphicsUnit.Pixel);
                     }
-
-
                 }
                 else
                 {
@@ -290,10 +345,26 @@ namespace HDPictureViewerConverter
                 pictureBox.Height = 80 * vertSquares;
                 pictureBox.Image = finalImage;
 
-                //save the final composite image to disk
-                System.IO.Directory.CreateDirectory(AppDir + @"\bin\" + filename);
-                finalImage.Save(AppDir + filename, ImageFormat.Png);
+                //checks if convPNG exists, if so, try to copy it. If not, abort.
+                if (convpngReady()) {
+                    try
+                    {
+                        errorsTxtBox.Text += "Information: Copying over convpng.exe and convpng.ini files\n";
+                        //save the final composite image to disk
+                        System.IO.Directory.CreateDirectory(AppDir + @"\bin\" + filename);
+                        finalImage.Save(AppDir + filename, ImageFormat.Png);
+                        //copies convpng.exe and the ini file to that directory to keep things neat and orderly
+                        System.IO.File.Copy(AppDir + @"\windows_convpng.exe", AppDir + @"\bin\" + filename + @"\windows_convpng.exe", true);
+                        System.IO.File.Copy(AppDir + @"\convpng.ini", AppDir + @"\bin\" + filename + @"\convpng.ini", true);
+                        errorsTxtBox.Text += "Information: Copy successful!\n";
 
+                    }catch(Exception ex)
+                    {
+                        MessageBox.Show("An error occured while accessing files. Close open files and try again.", "ERROR");
+                    }
+                    
+
+                }
                 progress(3);
 
                 //Creates a rectangle that will be used to cut each individual square
@@ -311,7 +382,10 @@ namespace HDPictureViewerConverter
                     "Do you believe to be recieving this message box in error and can't get rid of it? Type \"terminate\" to immediately kill this program the contact the developer on Github",
                     "Enter Appvar Name","AA");
                     if (lettersID.Equals("terminate"))
+                    {
                         Application.Exit();
+                        return;
+                    }
                 }
 
                 //filename 8 is the 8 character version of filename. Used for header of appvar where character count consistency is necessary
@@ -323,10 +397,8 @@ namespace HDPictureViewerConverter
                     filename8 += "_";
                 }
 
-
-
                 //Converts using convPNG Starts ini file
-                List<string> iniLinesTotal = new List<string>();
+                List<string> iniLinesList = new List<string>();
                 List<string> iniLinesPalette = new List<string>();
                 List<string> iniLinesGroupC = new List<string>();
                 List<string> iniLinesAppvarCimg = new List<string>();
@@ -349,6 +421,7 @@ namespace HDPictureViewerConverter
 
                 progress(4);
                 progress(0, vertSquares * horizSquares, "Slicing Image:");
+                errorsTxtBox.Text += "Information: Starting slicing of image.\n";
                 //Cuts each 80x80 square
                 int sliced = 0;
                 for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
@@ -409,6 +482,8 @@ namespace HDPictureViewerConverter
                         progress(sliced++);
                         progInfoLbl.Text = "Slicing Image: " + sliced.ToString() + "/" + vertSquares * horizSquares;
                     }
+                errorsTxtBox.Text += "Information: Slice Successful!\n";
+
 
                 iniLinesAppvarCpal.Add("\n#AppvarC         : " + filename + "P" + "\n" +
                 //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
@@ -417,38 +492,52 @@ namespace HDPictureViewerConverter
                 "#PNGImages         :" + "\n" +
                 "  image_palette.png") ;
 
-                iniLinesTotal = iniLinesPalette.Concat(iniLinesGroupC).Concat(iniLinesAppvarCimg).Concat(iniLinesAppvarCpal).ToList();
+                iniLinesList = iniLinesPalette.Concat(iniLinesGroupC).Concat(iniLinesAppvarCimg).Concat(iniLinesAppvarCpal).ToList();
+                string iniLines="";
+                foreach(string line in iniLinesList){
+                    iniLines += line + "\n";
+                }
+                
 
                 //saves the ini text and runs convpng
                 try
                 {
-                    System.IO.File.WriteAllLines(AppDir + @"convpng.ini", iniLinesTotal);
+                    errorsTxtBox.Text += "Information: writing to convpng.ini\n";
+                    // write a line of text to the file
+                    using (StreamWriter tw = new StreamWriter(AppDir + @"\bin\" + filename + @"\convpng.ini"))
+                    {
+                        tw.Write(iniLines);
+                    }
+                    errorsTxtBox.Text += "Information: write successful! Starting convpng.exe\n";
+
                     //starts the converter application and allows it 30 seconds to convert before erroring out
-                    var convPNGrunning = Process.Start(AppDir + @"windows_convpng.exe");
+                    var convPNGrunning = Process.Start(AppDir + @"\bin\" + filename + @"\windows_convpng.exe");
                     //give convPNG more time to run if converting large image.
                     if (width * height <= 3000000)
                         convPNGrunning.WaitForExit(45000);
                     else
                         convPNGrunning.WaitForExit();
+                    errorsTxtBox.Text += "Information: convpng returned successfully!\n";
                 }
                 catch (Exception ex)
                 {
                     errors += "ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir + "\n\n";
+                    errorsTxtBox.Text += errors;
+                    errorsTxtBox.ForeColor = Color.Red;
                     return;
                 }
             }
-
             subPicLabel.Visible = false;
             subPicBox.Visible = false;
             if (errors != null)
             {
                 MessageBox.Show(errors, "The following messages were encountered:");
             }
+            errorsTxtBox.Text += "Finished!";
             progress(1, 1, "Finished!");
-
         }
 
-        
+        //crops image to desired size
         static Bitmap CropImage(Image originalImage, Rectangle sourceRectangle, Rectangle? destinationRectangle = null)
         {
             if (destinationRectangle == null)
