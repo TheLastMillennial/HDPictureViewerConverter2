@@ -171,7 +171,7 @@ namespace HDPictureViewerConverter
             uint imagesToConvert = 0, imagesConverted = 0;
             double width, height, scale;
             Image img;
-            String errors = null, filename, filenamewe;
+            String errors = null, filename, filenamewe, filenamee;
             //gets current dir of this program
             String AppDir = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -182,16 +182,17 @@ namespace HDPictureViewerConverter
             //sets errors box colors to nominal
             errorsTxtBox.ForeColor = SystemColors.ControlText;
 
-            foreach (String File in f)
+            foreach (String file in f)
             {
                 //Sets progress bar
                 progress(0, 1, "Initial Image Loading");
 
                 imagesToConvert++;
-                img = Image.FromFile(File);
+                img = Image.FromFile(file);
                 // Bitmap bmp = (Bitmap)Bitmap.FromFile(File); Unused.
-                filename = Path.GetFileName(File);
-                filenamewe = Path.GetFileNameWithoutExtension(File);
+                filename = Path.GetFileName(file);
+                filenamewe = Path.GetFileNameWithoutExtension(file);
+                filenamee = Path.GetExtension(file);
                 
 
                 
@@ -348,14 +349,16 @@ namespace HDPictureViewerConverter
                 if (convpngReady()) {
                     try
                     {
-                        errorsTxtBox.AppendText("Information: Copying over convpng.exe and convpng.ini files\n");
+                        //errorsTxtBox.AppendText("Information: Copying over convpng.exe and convpng.ini files\n");
                         //save the final composite image to disk
-                        System.IO.Directory.CreateDirectory(AppDir + @"\bin\" + filename);
-                        finalImage.Save(AppDir + filename, ImageFormat.Png);
+                        //System.IO.Directory.CreateDirectory(AppDir + filename + @"\");
+                        if (File.Exists(filenamewe+".png"))
+                            File.Delete(filenamewe+".png");
+                        finalImage.Save(filename, ImageFormat.Png);
                         //copies convpng.exe and the ini file to that directory to keep things neat and orderly
-                        System.IO.File.Copy(AppDir + @"\windows_convpng.exe", AppDir + @"\bin\" + filename + @"\windows_convpngcopy.exe", true);
-                        System.IO.File.Copy(AppDir + @"\convpng.ini", AppDir + @"\bin\" + filename + @"\convpng.ini", true);
-                        errorsTxtBox.AppendText("Information: Copy successful!\n");
+                        //System.IO.File.Copy(AppDir + @"\windows_convpng.exe", AppDir + @"\bin\" + filename + @"\windows_convpngcopy.exe", true);
+                        //System.IO.File.Copy(AppDir + @"\convpng.ini", AppDir + @"\bin\" + filename + @"\convpng.ini", true);
+                        //errorsTxtBox.AppendText("Information: Copy successful!\n");
 
                     }catch(Exception ex)
                     {
@@ -428,7 +431,7 @@ namespace HDPictureViewerConverter
                 for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                     for (horizOffset = 0; horizOffset < horizSquares; horizOffset++)
                     {
-                        saveName = @"bin\" + filename + @"\";
+                        saveName = @"\";//@"bin\" + filename + 
                         num = "";
                         cropRect.X = horizOffset * 80;
                         cropRect.Y = vertOffset * 80;
@@ -472,7 +475,7 @@ namespace HDPictureViewerConverter
                         //adds each image as its own group to be converted
                         iniLinesAppvarCimg.Add("\n/name of your output app var (maximum of 8 characters)" + "\n" +
                         "#AppvarC         :" + num + lettersID + "\n" +
-                        "#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10))+ "\n" + //.Substring(0, saveName.Length - (filename.Length + 10)) 
+                        //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10))+ "\n" + //.Substring(0, saveName.Length - (filename.Length + 10)) 
                         "/This will be at the very beginning of the app var (add underscores to the end to make the whole header 16 chars long)" + "\n" +
                         "#OutputHeader      : HDPICCV4" + filename8 + "\n" +
                         "#OutputPalettes    : gfx" + "\n" +
@@ -487,7 +490,7 @@ namespace HDPictureViewerConverter
 
 
                 iniLinesAppvarCpal.Add("\n#AppvarC         : " + filename + "P" + "\n" +
-                "#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
+                //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
                 "#OutputHeader      : HDPALV1B" + filename8 + num + lettersID + "\n" +
                 "#OutputPalettes    : gfx" + "\n" +
                 "#PNGImages         :" + "\n" +
@@ -505,14 +508,14 @@ namespace HDPictureViewerConverter
                 {
                     errorsTxtBox.AppendText("Information: writing to convpng.ini\n");
                     // write a line of text to the file
-                    using (StreamWriter tw = new StreamWriter(AppDir + @"\bin\" + filename + @"\convpng.ini"))
+                    using (StreamWriter tw = new StreamWriter(AppDir +  @"\convpng.ini")) //@"\bin\" + filename +
                     {
-                        tw.Write(iniLines);
+                        tw.WriteLine(iniLines);
                     }
                     errorsTxtBox.AppendText("Information: write successful! Starting convpng.exe\n");
 
                     //starts the converter application and allows it 30 seconds to convert before erroring out
-                    var convPNGrunning = Process.Start(AppDir + @"\bin\" + filename + @"\windows_convpngcopy.exe");
+                    var convPNGrunning = Process.Start(AppDir + @"\windows_convpng.exe"); //@"\bin\" + filename + 
                     //give convPNG more time to run if converting large image.
                     if (width * height <= 3000000)
                         convPNGrunning.WaitForExit(45000);
@@ -527,12 +530,81 @@ namespace HDPictureViewerConverter
                      
                     return;
                 }
+
+                progress(0, 5, "Cleaning up");
+                string[] cfiles = Directory.GetFiles(AppDir, "*.c", 0);
+                try
+                {
+                    //deletes unnecessary files
+                    foreach (string s in cfiles)
+                    {
+                        System.IO.File.Delete(s);
+                        errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
+                    }
+                    progress(1);
+                    cfiles = Directory.GetFiles(AppDir, "*.h", 0);
+                    foreach (string s in cfiles)
+                    {
+                        System.IO.File.Delete(s);
+                        errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
+                    }
+                    progress(2);
+                    cfiles = Directory.GetFiles(AppDir, "*.png", 0);
+                    foreach (string s in cfiles)
+                    {
+                        System.IO.File.Delete(s);
+                        errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
+                    }
+                    progress(3);
+                    cfiles = Directory.GetFiles(AppDir, "*"+filenamee, 0);
+                    foreach (string s in cfiles)
+                    {
+                        System.IO.File.Delete(s);
+                        errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
+                    }
+                    progress(4);
+                }catch (Exception ex)
+                {
+                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: " + ex.ToString(), Color.Red);
+                    MessageBox.Show("An error occured while deleting unnecesary files. Check red text for more information.", "ERROR");
+                }
+
+
+                //moves appvars to specific directory
+                cfiles = Directory.GetFiles(AppDir, "*.8xv",0);
+                if (!Directory.Exists(AppDir + filename))
+                    Directory.CreateDirectory(AppDir + filename );
+                int location;
+                string newName;
+                foreach (string s in cfiles)
+                {
+                    location = 0;
+                    for(int i = 0; i < s.Length; i++)
+                        if (s[i].Equals('\\'))
+                            location = i;
+
+                    newName = s.Substring(location + 1);
+
+                    try
+                    {
+                        System.IO.File.Move(s, AppDir + filename + @"\" + newName);
+                        errorsTxtBox.AppendText("Information: \"" + s + "\" was moved\n");
+                        progress(5);
+                    }catch (Exception ex)
+                    {
+                        errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while moving files: " + ex.ToString(), Color.Red);
+                        MessageBox.Show("An error occured while moving files. Check red text for more information.", "ERROR");
+                    }
+
+                }
+
+
             }
             subPicLabel.Visible = false;
             subPicBox.Visible = false;
             if (errors != null)
             {
-                MessageBox.Show(errors, "The following messages were encountered:");
+                MessageBox.Show(errors, "The following important messages were encountered:");
             }
             errorsTxtBox.AppendText("Finished!");
             progress(1, 1, "Finished!");
