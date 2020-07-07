@@ -44,10 +44,10 @@
             this.progBar = new System.Windows.Forms.ProgressBar();
             this.progInfoLbl = new System.Windows.Forms.Label();
             this.infoBox = new System.Windows.Forms.GroupBox();
-            this.origDimensionsLbl = new System.Windows.Forms.Label();
-            this.newDimensionsLbl = new System.Windows.Forms.Label();
-            this.squaresLbl = new System.Windows.Forms.Label();
             this.errorsTxtBox = new System.Windows.Forms.RichTextBox();
+            this.squaresLbl = new System.Windows.Forms.Label();
+            this.newDimensionsLbl = new System.Windows.Forms.Label();
+            this.origDimensionsLbl = new System.Windows.Forms.Label();
             this.OptionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
@@ -167,6 +167,7 @@
             // 
             this.progInfoLbl.AutoSize = true;
             this.progInfoLbl.Location = new System.Drawing.Point(11, 391);
+            this.progInfoLbl.MaximumSize = new System.Drawing.Size(500, 0);
             this.progInfoLbl.Name = "progInfoLbl";
             this.progInfoLbl.Size = new System.Drawing.Size(139, 25);
             this.progInfoLbl.TabIndex = 8;
@@ -185,33 +186,6 @@
             this.infoBox.TabStop = false;
             this.infoBox.Text = "Advanced Information:";
             // 
-            // origDimensionsLbl
-            // 
-            this.origDimensionsLbl.AutoSize = true;
-            this.origDimensionsLbl.Location = new System.Drawing.Point(12, 39);
-            this.origDimensionsLbl.Name = "origDimensionsLbl";
-            this.origDimensionsLbl.Size = new System.Drawing.Size(216, 25);
-            this.origDimensionsLbl.TabIndex = 0;
-            this.origDimensionsLbl.Text = "Original Dimensions: ";
-            // 
-            // newDimensionsLbl
-            // 
-            this.newDimensionsLbl.AutoSize = true;
-            this.newDimensionsLbl.Location = new System.Drawing.Point(12, 64);
-            this.newDimensionsLbl.Name = "newDimensionsLbl";
-            this.newDimensionsLbl.Size = new System.Drawing.Size(178, 25);
-            this.newDimensionsLbl.TabIndex = 1;
-            this.newDimensionsLbl.Text = "New Dimensions:";
-            // 
-            // squaresLbl
-            // 
-            this.squaresLbl.AutoSize = true;
-            this.squaresLbl.Location = new System.Drawing.Point(12, 89);
-            this.squaresLbl.Name = "squaresLbl";
-            this.squaresLbl.Size = new System.Drawing.Size(154, 25);
-            this.squaresLbl.TabIndex = 2;
-            this.squaresLbl.Text = "Squares Used:";
-            // 
             // errorsTxtBox
             // 
             this.errorsTxtBox.BackColor = System.Drawing.SystemColors.Control;
@@ -222,6 +196,33 @@
             this.errorsTxtBox.Size = new System.Drawing.Size(541, 305);
             this.errorsTxtBox.TabIndex = 10;
             this.errorsTxtBox.Text = "Messages Encountered:\n";
+            // 
+            // squaresLbl
+            // 
+            this.squaresLbl.AutoSize = true;
+            this.squaresLbl.Location = new System.Drawing.Point(12, 89);
+            this.squaresLbl.Name = "squaresLbl";
+            this.squaresLbl.Size = new System.Drawing.Size(154, 25);
+            this.squaresLbl.TabIndex = 2;
+            this.squaresLbl.Text = "Squares Used:";
+            // 
+            // newDimensionsLbl
+            // 
+            this.newDimensionsLbl.AutoSize = true;
+            this.newDimensionsLbl.Location = new System.Drawing.Point(12, 64);
+            this.newDimensionsLbl.Name = "newDimensionsLbl";
+            this.newDimensionsLbl.Size = new System.Drawing.Size(178, 25);
+            this.newDimensionsLbl.TabIndex = 1;
+            this.newDimensionsLbl.Text = "New Dimensions:";
+            // 
+            // origDimensionsLbl
+            // 
+            this.origDimensionsLbl.AutoSize = true;
+            this.origDimensionsLbl.Location = new System.Drawing.Point(12, 39);
+            this.origDimensionsLbl.Name = "origDimensionsLbl";
+            this.origDimensionsLbl.Size = new System.Drawing.Size(216, 25);
+            this.origDimensionsLbl.TabIndex = 0;
+            this.origDimensionsLbl.Text = "Original Dimensions: ";
             // 
             // HDpicConverterForm
             // 

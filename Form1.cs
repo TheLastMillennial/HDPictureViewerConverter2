@@ -222,24 +222,26 @@ namespace HDPictureViewerConverter
                     DialogResult result = MessageBox.Show("\"" + filename + "\" is insanely large and as a result may take a long time to convert or outright crash this program due to high RAM usage.\nNote: Your calculator will most liekly not be able handle such a large image if you did not select to resize it. \nDo you want to continue anyways?", "Warning: Large Image", MessageBoxButtons.YesNo);
                     if (result == DialogResult.No)
                         break;
-                    errors += "Insanely large image conversion manually activated by user.\n\n";
+                    errors += "Information: Insanely large image conversion manually activated by user.\n";
                     errorsTxtBox.AppendText(errors, Color.Orange);
                     
                 }
 
                 pictureBox.Image = img;
+
                 progress(1);
 
                 /* Do not resize image
                 Maintain aspect ratio
                 Stretch to fit */
                 progress(0, 1, "Resizing Image");
+                errorsTxtBox.AppendText("Resizing image to desired setting");
                 //maintain aspect ratio
                 if (resizeComboBox.SelectedIndex == 1)
                 {
                     //if images is already 320 wide or 240 tall, no need to resize.
                     if (width == 320 || height == 240)
-                        errorsTxtBox.AppendText("Information: \"" + filename + "\" already has dimesnions of " + width + "x" + height + " and cannot be resized any better with Maintain aspect ratio as the setting.\n\n");
+                        errorsTxtBox.AppendText("Information: \"" + filename + "\" already has dimesnions of " + width + "x" + height + " and cannot be resized any better with Maintain aspect ratio as the setting.\n");
                     else
                     {
                         //gets the width correct
@@ -270,17 +272,16 @@ namespace HDPictureViewerConverter
                         pictureBox.Width = img.Width;
                         pictureBox.Height = img.Height;
                         pictureBox.Image = img;
+                        
                         //MessageBox.Show("Height: " + height + "Width: " + width);
                     }
+                    errorsTxtBox.AppendText("Successfully resized to desired setting!");
                 }
-
-                //Stretch to fit
-                if (resizeComboBox.SelectedIndex == 2)
+                else if(resizeComboBox.SelectedIndex == 2)
                 {
+                    //Stretch to fit
                     if (width == 320 || height == 240)
-                    {
                         errorsTxtBox.AppendText("Information: \"" + filename + "\" already has dimensions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n");
-                    }
                     else
                         img = ResizeImage(img, 320, 240);
                     width = 320;
@@ -288,8 +289,10 @@ namespace HDPictureViewerConverter
                     pictureBox.Width = img.Width;
                     pictureBox.Height = img.Height;
                     pictureBox.Image = (Image)img;
-                    //img.Save(@"stretched.png");
-                }
+                    errorsTxtBox.AppendText("Information: Successfully resized to desired setting!");
+                }else
+                    errorsTxtBox.AppendText("Information: Did not resize image");
+
 
                 //checks if image will fit on calculator
                 if (width * height > 3000000)
@@ -352,9 +355,9 @@ namespace HDPictureViewerConverter
                         //errorsTxtBox.AppendText("Information: Copying over convpng.exe and convpng.ini files\n");
                         //save the final composite image to disk
                         //System.IO.Directory.CreateDirectory(AppDir + filename + @"\");
-                        if (File.Exists(filenamewe+".png"))
-                            File.Delete(filenamewe+".png");
-                        finalImage.Save(filename, ImageFormat.Png);
+                        if (File.Exists(AppDir+filename+".png"))
+                            File.Delete(AppDir+filename+".png");
+                        finalImage.Save(AppDir+filename, ImageFormat.Png);
                         //copies convpng.exe and the ini file to that directory to keep things neat and orderly
                         //System.IO.File.Copy(AppDir + @"\windows_convpng.exe", AppDir + @"\bin\" + filename + @"\windows_convpngcopy.exe", true);
                         //System.IO.File.Copy(AppDir + @"\convpng.ini", AppDir + @"\bin\" + filename + @"\convpng.ini", true);
@@ -362,7 +365,7 @@ namespace HDPictureViewerConverter
 
                     }catch(Exception ex)
                     {
-                        errorsTxtBox.AppendText("An error occured while accessing files: " + ex.ToString(),Color.Red);
+                        errorsTxtBox.AppendText("An error occured while saving files: " + ex.ToString(),Color.Red);
                         MessageBox.Show("An error occured while accessing files. Check red text for more information." , "ERROR") ;
                         return;
                     }
@@ -486,7 +489,7 @@ namespace HDPictureViewerConverter
                         progress(sliced++);
                         progInfoLbl.Text = "Slicing Image: " + sliced.ToString() + "/" + vertSquares * horizSquares;
                     }
-                errorsTxtBox.AppendText("Information: Slice Successful!\n");
+                errorsTxtBox.AppendText("Information: Slice Successful!\n",Color.Green);
 
 
                 iniLinesAppvarCpal.Add("\n#AppvarC         : " + filename + "P" + "\n" +
@@ -512,7 +515,7 @@ namespace HDPictureViewerConverter
                     {
                         tw.WriteLine(iniLines);
                     }
-                    errorsTxtBox.AppendText("Information: write successful! Starting convpng.exe\n");
+                    errorsTxtBox.AppendText("Information: write successful! Starting convpng.exe\n",Color.Green);
 
                     //starts the converter application and allows it 30 seconds to convert before erroring out
                     var convPNGrunning = Process.Start(AppDir + @"\windows_convpng.exe"); //@"\bin\" + filename + 
@@ -521,13 +524,12 @@ namespace HDPictureViewerConverter
                         convPNGrunning.WaitForExit(45000);
                     else
                         convPNGrunning.WaitForExit();
-                    errorsTxtBox.AppendText("Information: convpng returned successfully!\n");
+                    errorsTxtBox.AppendText("Information: convpng returned successfully!\n",Color.Green);
                 }
                 catch (Exception ex)
                 {
                     errors += "ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir + "\n\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
-                     
                     return;
                 }
 
@@ -565,35 +567,59 @@ namespace HDPictureViewerConverter
                     progress(4);
                 }catch (Exception ex)
                 {
-                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: " + ex.ToString(), Color.Red);
+                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: \n" + ex.ToString() + "\n", Color.Red);
                     MessageBox.Show("An error occured while deleting unnecesary files. Check red text for more information.", "ERROR");
+                    break;
                 }
 
 
-                //moves appvars to specific directory
-                cfiles = Directory.GetFiles(AppDir, "*.8xv",0);
-                if (!Directory.Exists(AppDir + filename))
-                    Directory.CreateDirectory(AppDir + filename );
+                //checks if directory already has appvars in it. If so, delete them.
+                try
+                {
+                    if (!Directory.Exists(AppDir + filenamewe))
+                        Directory.CreateDirectory(AppDir + filenamewe);
+                    else
+                    {
+                        Directory.Delete(AppDir + filenamewe,true);
+                        //waits for directory to be deleted before creating it again.
+                        while (Directory.Exists(AppDir + filenamewe))
+                        {
+                            System.Threading.Thread.Sleep(200);
+                        }
+                        Directory.CreateDirectory(AppDir + filenamewe);
+                    }
+                        
+                }
+                catch (Exception ex)
+                {
+                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting/ creating a directory: \n" + ex.ToString() +"\n", Color.Red);
+                    MessageBox.Show("An error occured while deleting or creating a directory. Check red text for more information.", "ERROR");
+                    break;
+                }
+                //moves appvars to correct lovation
                 int location;
-                string newName;
+                string newName,test;
+                cfiles = Directory.GetFiles(AppDir, "*.8xv", 0);
                 foreach (string s in cfiles)
                 {
+                    //gets file name
                     location = 0;
                     for(int i = 0; i < s.Length; i++)
                         if (s[i].Equals('\\'))
                             location = i;
-
                     newName = s.Substring(location + 1);
 
                     try
                     {
-                        System.IO.File.Move(s, AppDir + filename + @"\" + newName);
+                        test = AppDir + filenamewe + @"\" + newName;
+                        System.IO.File.Move(s, test);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was moved\n");
                         progress(5);
                     }catch (Exception ex)
                     {
-                        errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while moving files: " + ex.ToString(), Color.Red);
+                        errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while moving files: \n" + ex.ToString() + "\n", Color.Red);
                         MessageBox.Show("An error occured while moving files. Check red text for more information.", "ERROR");
+                        break;
                     }
 
                 }
@@ -606,7 +632,7 @@ namespace HDPictureViewerConverter
             {
                 MessageBox.Show(errors, "The following important messages were encountered:");
             }
-            errorsTxtBox.AppendText("Finished!");
+            errorsTxtBox.AppendText("Finished!", Color.Green);
             progress(1, 1, "Finished!");
         }
 
