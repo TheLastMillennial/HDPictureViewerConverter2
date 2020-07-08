@@ -217,13 +217,12 @@ namespace HDPictureViewerConverter
                 width = pictureBox.Width = img.Width;
                 height = pictureBox.Height = img.Height;
                 origDimensionsLbl.Text = "Original Dimensions: " + width + "x" + height;
-                if (width * height >= 100000000)
+                if (width * height >= 50000000)//50,000,000
                 {
                     DialogResult result = MessageBox.Show("\"" + filename + "\" is insanely large and as a result may take a long time to convert or outright crash this program due to high RAM usage.\nNote: Your calculator will most liekly not be able handle such a large image if you did not select to resize it. \nDo you want to continue anyways?", "Warning: Large Image", MessageBoxButtons.YesNo);
                     if (result == DialogResult.No)
                         break;
-                    errors += "Information: Insanely large image conversion manually activated by user.\n";
-                    errorsTxtBox.AppendText(errors, Color.Orange);
+                    errorsTxtBox.AppendText("Information: Insanely large image conversion manually activated by user.\n", Color.Orange);
                     
                 }
 
@@ -533,33 +532,42 @@ namespace HDPictureViewerConverter
                     return;
                 }
 
+                string convpnglog = File.ReadAllText(AppDir + @"\convpng.ini");
+                if (convpnglog.IndexOf("[error]") != -1)
+                {
+                    errors += "ERROR: An error occured with windows_convpng.exe open convpng.log for more information!\n" + AppDir + "\n\n";
+                    errorsTxtBox.AppendText(errors, Color.Red);
+                    MessageBox.Show("An error occured with windows_convpng.exe! Image was not converted! Check the red text for more information!", "ERROR");
+                    return;
+                }
+
                 progress(0, 5, "Cleaning up");
-                string[] cfiles = Directory.GetFiles(AppDir, "*.c", 0);
+                string[] findFiles = Directory.GetFiles(AppDir, "*.c", 0);
                 try
                 {
                     //deletes unnecessary files
-                    foreach (string s in cfiles)
+                    foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
                     }
                     progress(1);
-                    cfiles = Directory.GetFiles(AppDir, "*.h", 0);
-                    foreach (string s in cfiles)
+                    findFiles = Directory.GetFiles(AppDir, "*.h", 0);
+                    foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
                     }
                     progress(2);
-                    cfiles = Directory.GetFiles(AppDir, "*.png", 0);
-                    foreach (string s in cfiles)
+                    findFiles = Directory.GetFiles(AppDir, "*.png", 0);
+                    foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
                     }
                     progress(3);
-                    cfiles = Directory.GetFiles(AppDir, "*"+filenamee, 0);
-                    foreach (string s in cfiles)
+                    findFiles = Directory.GetFiles(AppDir, "*"+filenamee, 0);
+                    foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
@@ -599,8 +607,8 @@ namespace HDPictureViewerConverter
                 //moves appvars to correct lovation
                 int location;
                 string newName,test;
-                cfiles = Directory.GetFiles(AppDir, "*.8xv", 0);
-                foreach (string s in cfiles)
+                findFiles = Directory.GetFiles(AppDir, "*.8xv", 0);
+                foreach (string s in findFiles)
                 {
                     //gets file name
                     location = 0;
