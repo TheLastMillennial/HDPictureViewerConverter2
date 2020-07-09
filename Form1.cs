@@ -193,7 +193,22 @@ namespace HDPictureViewerConverter
                 filename = Path.GetFileName(file);
                 filenamewe = Path.GetFileNameWithoutExtension(file);
                 filenamee = Path.GetExtension(file);
-                
+
+                bool stopConversion = false;
+                foreach(char c in filename)
+                {
+                    if(c.Equals(' '))
+                    {
+                        errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. Your image file name must NOT contain whitespace (Use underscores instead). Please rename this file and try again!\n\n";
+                        errorsTxtBox.AppendText(errors, Color.Red);
+                        stopConversion = true;
+                        break;
+                    }
+                    if (stopConversion)
+                        break;
+                }
+                if (stopConversion)
+                    continue;
 
                 
                 errorsTxtBox.AppendText("\n+ Information: Starting Conversion of " + filename+"\n");
@@ -493,7 +508,7 @@ namespace HDPictureViewerConverter
 
                 iniLinesAppvarCpal.Add("\n#AppvarC         : " + filename + "P" + "\n" +
                 //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
-                "#OutputHeader      : HDPALV1B" + filename8 + num + lettersID + "\n" +
+                "#OutputHeader      : HDPALV10" + filename8 + num + lettersID + "\n" +
                 "#OutputPalettes    : gfx" + "\n" +
                 "#PNGImages         :" + "\n" +
                 "  image_palette.png") ;
@@ -640,7 +655,7 @@ namespace HDPictureViewerConverter
             {
                 MessageBox.Show(errors, "The following important messages were encountered:");
             }
-            errorsTxtBox.AppendText("Finished!", Color.Green);
+            errorsTxtBox.AppendText("Finished!\n\n", Color.Green);
             progress(1, 1, "Finished!");
         }
 
