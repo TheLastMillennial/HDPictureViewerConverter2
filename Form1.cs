@@ -93,8 +93,12 @@ namespace HDPictureViewerConverter
         }
         public static Boolean isAlphaNumeric(string strToCheck)
         {
-            Regex rg = new Regex(@"^[A-Z0-9\s,]*$");
-            return rg.IsMatch(strToCheck);
+            if (!Regex.IsMatch(strToCheck.ToString(), "[A-Z]", RegexOptions.IgnoreCase))
+                return false;
+            if (strToCheck[1] < 128)
+                return true;
+            return false;
+            
         }
 
         //User clicked 'Open Images to Convert'
@@ -392,8 +396,9 @@ namespace HDPictureViewerConverter
                 Rectangle cropRect = new Rectangle(0, 0, 80, 80);
                 //Bitmap src = Image.FromFile(File) as Bitmap;
                 Bitmap target = new Bitmap(cropRect.Width, cropRect.Height);
-                String saveName = "",num="";
-                string lettersID = Interaction.InputBox("Enter two alphanumeric characters (a-z and 0-9).\n" +
+                string saveName = "",num="",lettersID="  ";
+
+                lettersID = Interaction.InputBox("Enter an alphabetic character followed by any ASCII character (A-Z and 0-9).\n" +
                     "To avoid issues, run the HDPICV program on your calculator, press [mode] and look at the bottom where it says\"Safe Appvar Name\"",
                     "Enter Appvar Name", "AA");
                 if (lettersID.Length != 2 || !isAlphaNumeric(lettersID))
@@ -410,13 +415,24 @@ namespace HDPictureViewerConverter
                 }
 
                 //filename 8 is the 8 character version of filename. Used for header of appvar where character count consistency is necessary
-                string filename8 = filename;
+                string filename8 = filenamewe;
                 if (filename8.Length > 8)
                     filename8 = filename8.Substring(0, 8);
                 while (filename8.Length < 8)
                 {
                     filename8 += "_";
                 }
+                /*paletteName8 is used to identify what appvar is the palette for an image with ID of lettersID. 
+                 * HP is just to show it's 
+                 * The 0s at the end are just for potential future features*/
+                string paletteName8 = "HP" + lettersID + "0000";
+                if (filename8.Length > 8)
+                    filename8 = filename8.Substring(0, 8);
+                while (filename8.Length < 8)
+                {
+                    filename8 += "_";
+                }
+
 
                 //Converts using convPNG Starts ini file
                 List<string> iniLinesList = new List<string>();
@@ -448,7 +464,7 @@ namespace HDPictureViewerConverter
                 for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                     for (horizOffset = 0; horizOffset < horizSquares; horizOffset++)
                     {
-                        saveName = @"\";//@"bin\" + filename + 
+                        saveName = "";//@"bin\" + filename + @"\"
                         num = "";
                         cropRect.X = horizOffset * 80;
                         cropRect.Y = vertOffset * 80;
@@ -481,7 +497,7 @@ namespace HDPictureViewerConverter
                         }
                         saveName += vertOffset.ToString();
                         num += vertOffset.ToString();
-                        saveName += filename + ".png";
+                        saveName += filenamewe + ".png";
                         //MessageBox.Show(saveName);
                         Bitmap save2 = new Bitmap(target);
                         save2.Save(AppDir + saveName);
@@ -491,7 +507,7 @@ namespace HDPictureViewerConverter
 
                         //adds each image as its own group to be converted
                         iniLinesAppvarCimg.Add("\n/name of your output app var (maximum of 8 characters)" + "\n" +
-                        "#AppvarC         :" + num + lettersID + "\n" +
+                        "#AppvarC         :" + lettersID + num  + "\n" +
                         //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10))+ "\n" + //.Substring(0, saveName.Length - (filename.Length + 10)) 
                         "/This will be at the very beginning of the app var (add underscores to the end to make the whole header 16 chars long)" + "\n" +
                         "#OutputHeader      : HDPICCV4" + filename8 + "\n" +
@@ -505,10 +521,10 @@ namespace HDPictureViewerConverter
                     }
                 errorsTxtBox.AppendText("Information: Slice Successful!\n",Color.Green);
 
-
-                iniLinesAppvarCpal.Add("\n#AppvarC         : " + filename + "P" + "\n" +
+                //This saves the palette for the image
+                iniLinesAppvarCpal.Add("\n#AppvarC         : " + paletteName8 + "\n" +
                 //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
-                "#OutputHeader      : HDPALV10" + filename8 + num + lettersID + "\n" +
+                "#OutputHeader      : HDPALV10" + filename8 +  lettersID + num + "\n" +
                 "#OutputPalettes    : gfx" + "\n" +
                 "#PNGImages         :" + "\n" +
                 "  image_palette.png") ;
@@ -574,12 +590,12 @@ namespace HDPictureViewerConverter
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
                     }
                     progress(2);
-                    findFiles = Directory.GetFiles(AppDir, "*.png", 0);
+                    /*findFiles = Directory.GetFiles(AppDir, "*.png", 0);
                     foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
-                    }
+                    }*/
                     progress(3);
                     findFiles = Directory.GetFiles(AppDir, "*"+filenamee, 0);
                     foreach (string s in findFiles)
