@@ -105,7 +105,7 @@ namespace HDPictureViewerConverter
         private void OpenImgBtn_Click(object sender, EventArgs e)
         {
             //Opens the dialog for user to select images to convert
-            if (!convpngReady())
+            if (!convimgReady())
             {
                 MessageBox.Show("A critical file is missing! Check the red text box for more information!", "ERROR");
                 return;
@@ -136,31 +136,31 @@ namespace HDPictureViewerConverter
             convertImg((string[])e.Data.GetData(DataFormats.FileDrop, false));
         }
 
-        //checks if convpng.exe and convpng.ini exists
-        private bool convpngReady()
+        //checks if convimg.exe and convimg.yaml exists
+        private bool convimgReady()
         {
             String AppDir = AppDomain.CurrentDomain.BaseDirectory,errors="";
             bool ready = true ;
 
-            if (!System.IO.File.Exists(AppDir + @"\windows_convpng.exe"))
+            if (!System.IO.File.Exists(AppDir + @"\convimg.exe"))
             {
 
-                errors += "ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir + "\n\n";
+                errors += "ERROR: All images not converted! Make sure you have convimg.exe at the following directory: \n" + AppDir + "\n\n";
                 errorsTxtBox.AppendText(errors,Color.Red);
                 ready = false ;
             }
-            if (!System.IO.File.Exists(AppDir + @"\convpng.ini"))
+            if (!System.IO.File.Exists(AppDir + @"\convimg.yaml"))
             {
                 try
                 {
-                    File.Create(AppDir + @"\convpng.ini");
-                    errors += "Information: convpng.ini was not found but has been successfully created at the following directory: Due to a bug,this is considered a FAIL. \n" + AppDir + "\n\n";
+                    File.Create(AppDir + @"\convimg.yaml");
+                    errors += "Information: convimg.yaml was not found but has been successfully created at the following directory: Due to a bug,this is considered a FAIL. \n" + AppDir + "\n\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
                     ready = false;
                 }
                 catch (Exception ex)
                 {
-                    errors += "ERROR: convpng.ini was not found and could not be automatically created at the following directory: \n" + AppDir + "\n\n";
+                    errors += "ERROR: convimg.yaml was not found and could not be automatically created at the following directory: \n" + AppDir + "\n\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
                     ready = false;
                 }
@@ -367,20 +367,12 @@ namespace HDPictureViewerConverter
                 pictureBox.Image = finalImage;
 
                 //checks if convPNG exists, if so, try to copy it. If not, abort.
-                if (convpngReady()) {
+                if (convimgReady()) {
                     try
                     {
-                        //errorsTxtBox.AppendText("Information: Copying over convpng.exe and convpng.ini files\n");
-                        //save the final composite image to disk
-                        //System.IO.Directory.CreateDirectory(AppDir + filename + @"\");
                         if (File.Exists(AppDir+filename+".png"))
                             File.Delete(AppDir+filename+".png");
-                        finalImage.Save(AppDir+filename, ImageFormat.Png);
-                        //copies convpng.exe and the ini file to that directory to keep things neat and orderly
-                        //System.IO.File.Copy(AppDir + @"\windows_convpng.exe", AppDir + @"\bin\" + filename + @"\windows_convpngcopy.exe", true);
-                        //System.IO.File.Copy(AppDir + @"\convpng.ini", AppDir + @"\bin\" + filename + @"\convpng.ini", true);
-                        //errorsTxtBox.AppendText("Information: Copy successful!\n");
-
+                        finalImage.Save(AppDir + filename, ImageFormat.Png);
                     }catch(Exception ex)
                     {
                         errorsTxtBox.AppendText("An error occured while saving files: " + ex.ToString(),Color.Red);
@@ -435,13 +427,34 @@ namespace HDPictureViewerConverter
 
 
                 //Converts using convPNG Starts ini file
+                /*
                 List<string> iniLinesList = new List<string>();
                 List<string> iniLinesPalette = new List<string>();
                 List<string> iniLinesGroupC = new List<string>();
                 List<string> iniLinesAppvarCimg = new List<string>();
-                List<string> iniLinesAppvarCpal = new List<string>();
+                List<string> iniLinesAppvarCpal = new List<string>();*/
 
-                iniLinesPalette.Add("/Leave this alone" + "\n" +
+                List<string> yamlLinesList = new List<string>();
+                List<string> yamlPalettes = new List<string>();
+                List<string> yamlOutputsPal = new List<string>();
+                List<string> yamlOutputsImg = new List<string>();
+                List<string> yamlConverts = new List<string>();
+                List<string> yamlLinesAppvarName = new List<string>();
+
+                //starts setting up for the convimg yaml file.
+                yamlPalettes.Add("\npalettes:" +
+                    "\n  - name: my_palette" +
+                    "\n  fixed-colors:" +
+                    "\n  - color: { index: 0,   r: 0,   g: 0,   b: 0}" +
+                    "\n  - color: { index: 255, r: 255, g: 255, b: 255}" +
+                    "\n    images: automatic");
+
+                yamlConverts.Add("\n\nconverts:");
+
+                yamlOutputsImg.Add("\n\noutputs:");
+
+
+                {/*iniLinesPalette.Add("/Leave this alone" + "\n" +
                 "#GroupPalette      : image_palette.png" + "\n" +
                 "#FixedIndexColor   : 0,0,0,0" + "\n" +
                 "#FixedIndexColor   : 1,255,255,255" + "\n" +
@@ -454,13 +467,15 @@ namespace HDPictureViewerConverter
                 "#FixedIndexColor   : 0,0,0,0" + "\n" +
                 "#FixedIndexColor   : 1,255,255,255" + "\n" +
                 "/Put your image names here (same as above)" + "\n" +
-                "#PNGImages         :" + "\n" );
+                "#PNGImages         :" + "\n" );*/
+                }
 
                 progress(4);
                 progress(0, vertSquares * horizSquares, "Slicing Image:");
                 errorsTxtBox.AppendText("Information: Starting slicing of image.\n");
                 //Cuts each 80x80 square
                 int sliced = 0;
+
                 for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                     for (horizOffset = 0; horizOffset < horizSquares; horizOffset++)
                     {
@@ -502,10 +517,20 @@ namespace HDPictureViewerConverter
                         Bitmap save2 = new Bitmap(target);
                         save2.Save(AppDir + saveName);
 
-                        iniLinesPalette.Add("  " + AppDir + saveName);
-                        iniLinesGroupC.Add("  " + AppDir + saveName);
 
-                        //adds each image as its own group to be converted
+                        yamlConverts.Add("\n  - name:" + lettersID + num +
+                            "\n    palette: my_palette" +
+                            "\n    images:" +
+                            "\n      - " + saveName.Substring(0, saveName.Length - 4));
+
+                        yamlOutputsImg.Add("\n  - type: appvar \n" +
+                            "    name: " + lettersID + num + "\n" +
+                            "    source-format: ice\n" + //only ice because Mateo said it can be this and C doesn't work.
+                            "    header-string: " + " HDPICCV4" + filename8 + "\n" +
+                            "    archived: true \n" +
+                            "    converts: \n" +
+                            "      - " + lettersID + num);
+                        {/*//adds each image as its own group to be converted
                         iniLinesAppvarCimg.Add("\n/name of your output app var (maximum of 8 characters)" + "\n" +
                         "#AppvarC         :" + lettersID + num  + "\n" +
                         //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10))+ "\n" + //.Substring(0, saveName.Length - (filename.Length + 10)) 
@@ -514,7 +539,8 @@ namespace HDPictureViewerConverter
                         "#OutputPalettes    : gfx" + "\n" +
                         "/Image name of LEFT image" + "\n" +
                         "#PNGImages         :" + "\n" +
-                        "  " + AppDir + saveName.Substring(0, saveName.Length - 4) + "\n");
+                        "  " + AppDir + saveName.Substring(0, saveName.Length - 4) + "\n");*/
+                    }
                         //dispalys progress back to user
                         progress(sliced++);
                         progInfoLbl.Text = "Slicing Image: " + sliced.ToString() + "/" + vertSquares * horizSquares;
@@ -522,55 +548,77 @@ namespace HDPictureViewerConverter
                 errorsTxtBox.AppendText("Information: Slice Successful!\n",Color.Green);
 
                 //This saves the palette for the image
-                iniLinesAppvarCpal.Add("\n#AppvarC         : " + paletteName8 + "\n" +
-                //"#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
+                /*iniLinesAppvarCpal.Add("\n#AppvarC         : " + paletteName8 + "\n" +
+                "#OutputDirectory : " + AppDir + saveName.Substring(0, saveName.Length - (filename.Length + 10)) + "*" + "\n" +
                 "#OutputHeader      : HDPALV10" + filename8 +  lettersID + num + "\n" +
                 "#OutputPalettes    : gfx" + "\n" +
                 "#PNGImages         :" + "\n" +
-                "  image_palette.png") ;
+                "  image_palette.png") ;*/
 
-                iniLinesList = iniLinesPalette.Concat(iniLinesGroupC).Concat(iniLinesAppvarCimg).Concat(iniLinesAppvarCpal).ToList();
+                yamlOutputsPal.Add("\n  - type: appvar" +
+                    "\n    name: palgfx" +
+                    "\n    source - format: ice" +
+                    "\n    header - string: HDPALV10" + filename8 +  lettersID + num +
+                    "\n    archived: true" +
+                    "\n    palettes:" +
+                    "\n      - my_palette");
+
+                yamlLinesList = yamlPalettes.Concat(yamlConverts).Concat(yamlOutputsImg).Concat(yamlOutputsPal).ToList();
+
+                /*iniLinesList = iniLinesPalette.Concat(iniLinesGroupC).Concat(iniLinesAppvarCimg).Concat(iniLinesAppvarCpal).ToList();
                 string iniLines="";
                 foreach(string line in iniLinesList){
                     iniLines += line + "\n";
-                }
-                
+                }*/
 
-                //saves the ini text and runs convpng
+
+                //saves the ini text and runs convimg
                 try
                 {
-                    errorsTxtBox.AppendText("Information: writing to convpng.ini\n");
+                    errorsTxtBox.AppendText("Information: writing to convimg.yaml.\n");
                     // write a line of text to the file
-                    using (StreamWriter tw = new StreamWriter(AppDir +  @"\convpng.ini")) //@"\bin\" + filename +
+                    using (StreamWriter tw = new StreamWriter(AppDir +  @"convimg.yaml")) //@"\bin\" + filename +
                     {
-                        tw.WriteLine(iniLines);
+                        foreach (String s in yamlLinesList)
+                            tw.WriteLine(s);
                     }
-                    errorsTxtBox.AppendText("Information: write successful! Starting convpng.exe\n",Color.Green);
+                    errorsTxtBox.AppendText("Information: write successful! Starting convimg.exe\n",Color.Green);
 
                     //starts the converter application and allows it 30 seconds to convert before erroring out
-                    var convPNGrunning = Process.Start(AppDir + @"\windows_convpng.exe"); //@"\bin\" + filename + 
-                    //give convPNG more time to run if converting large image.
+                    var convimgRunning = Process.Start(AppDir + @"\convimg.exe"); //@"\bin\" + filename + 
+                    //give convimg more time to run if converting large image.
                     if (width * height <= 3000000)
-                        convPNGrunning.WaitForExit(45000);
+                        convimgRunning.WaitForExit(45000);
                     else
-                        convPNGrunning.WaitForExit();
-                    errorsTxtBox.AppendText("Information: convpng returned successfully!\n",Color.Green);
+                        convimgRunning.WaitForExit();
+                    errorsTxtBox.AppendText("Information: convimg returned successfully!\n",Color.Green);
                 }
                 catch (Exception ex)
                 {
-                    errors += "ERROR: All images not converted! Make sure you have windows_convpng.exe at the following directory: \n" + AppDir + "\n\n";
+                    errors += "ERROR: All images not converted! Make sure you have convimg.exe at the following directory: \n" + AppDir + "\n\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
                     return;
                 }
 
-                string convpnglog = File.ReadAllText(AppDir + @"\convpng.ini");
-                if (convpnglog.IndexOf("[error]") != -1)
+                //checks if a log file was made, if so, checks if any errors were encounterec
+                if(!File.Exists(AppDir + @"\convimg.log"))
                 {
-                    errors += "ERROR: An error occured with windows_convpng.exe open convpng.log for more information!\n" + AppDir + "\n\n";
+                    errors += "ERROR: convimg.log was not created! Conversion likely failed!\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
-                    MessageBox.Show("An error occured with windows_convpng.exe! Image was not converted! Check the red text for more information!", "ERROR");
-                    return;
+                    MessageBox.Show("An error occured with convimg.exe! Image was not converted! Check the red text for more information!", "ERROR");
                 }
+                else
+                {
+                    string convimglog = File.ReadAllText(AppDir + @"\convimg.log");
+                    if (convimglog.IndexOf("[error]") != -1 || convimglog.Length == 0)
+                    {
+                        errors += "ERROR: An error occured with convimg.exe open convimg.log for more information!\n" + AppDir + "\n\n";
+                        errorsTxtBox.AppendText(errors, Color.Red);
+                        MessageBox.Show("An error occured with convimg.exe! Image was not converted! Check the red text for more information!", "ERROR");
+                        return;
+                    }
+                }
+                
 
                 progress(0, 5, "Cleaning up");
                 string[] findFiles = Directory.GetFiles(AppDir, "*.c", 0);
@@ -590,12 +638,12 @@ namespace HDPictureViewerConverter
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
                     }
                     progress(2);
-                    /*findFiles = Directory.GetFiles(AppDir, "*.png", 0);
+                    findFiles = Directory.GetFiles(AppDir, "*.png", 0);
                     foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n");
-                    }*/
+                    }
                     progress(3);
                     findFiles = Directory.GetFiles(AppDir, "*"+filenamee, 0);
                     foreach (string s in findFiles)
