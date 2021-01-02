@@ -26,7 +26,7 @@ namespace HDPictureViewerConverter
         public HDpicConverterForm()
         {
             InitializeComponent();
-            SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory,"Brian");
+            SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory, System.Security.Principal.WindowsIdentity.GetCurrent().Name);
             resizeComboBox.SelectedIndex = 1;
         }
 
@@ -444,9 +444,9 @@ namespace HDPictureViewerConverter
                 //starts setting up for the convimg yaml file.
                 yamlPalettes.Add("\npalettes:" +
                     "\n  - name: my_palette" +
-                    "\n  fixed-colors:" +
-                    "\n  - color: { index: 0,   r: 0,   g: 0,   b: 0}" +
-                    "\n  - color: { index: 255, r: 255, g: 255, b: 255}" +
+                    "\n    fixed-entries:" +
+                    "\n      - color: { index: 0,   r: 0,   g: 0,   b: 0}" +
+                    "\n      - color: { index: 255, r: 255, g: 255, b: 255}" +
                     "\n    images: automatic");
 
                 yamlConverts.Add("\n\nconverts:");
@@ -518,10 +518,10 @@ namespace HDPictureViewerConverter
                         save2.Save(AppDir + saveName);
 
 
-                        yamlConverts.Add("\n  - name:" + lettersID + num +
+                        yamlConverts.Add("\n  - name: " + lettersID + num +
                             "\n    palette: my_palette" +
                             "\n    images:" +
-                            "\n      - " + saveName.Substring(0, saveName.Length - 4));
+                            "\n      - " + saveName);//.Substring(0, saveName.Length - 4)) ;
 
                         yamlOutputsImg.Add("\n  - type: appvar \n" +
                             "    name: " + lettersID + num + "\n" +
@@ -556,9 +556,9 @@ namespace HDPictureViewerConverter
                 "  image_palette.png") ;*/
 
                 yamlOutputsPal.Add("\n  - type: appvar" +
-                    "\n    name: palgfx" +
-                    "\n    source - format: ice" +
-                    "\n    header - string: HDPALV10" + filename8 +  lettersID + num +
+                    "\n    name: HP" + lettersID + "0000" + //0000 used as placeholders, they don't signify anything
+                    "\n    source-format: ice" +
+                    "\n    header-string: HDPALV10" + filename8 +  lettersID + num +
                     "\n    archived: true" +
                     "\n    palettes:" +
                     "\n      - my_palette");
@@ -601,7 +601,7 @@ namespace HDPictureViewerConverter
                 }
 
                 //checks if a log file was made, if so, checks if any errors were encounterec
-                if(!File.Exists(AppDir + @"\convimg.log"))
+                /*if(!File.Exists(AppDir + @"\convimg.log"))
                 {
                     errors += "ERROR: convimg.log was not created! Conversion likely failed!\n";
                     errorsTxtBox.AppendText(errors, Color.Red);
@@ -617,11 +617,14 @@ namespace HDPictureViewerConverter
                         MessageBox.Show("An error occured with convimg.exe! Image was not converted! Check the red text for more information!", "ERROR");
                         return;
                     }
-                }
+                }*/
                 
-
+                
+                
                 progress(0, 5, "Cleaning up");
                 string[] findFiles = Directory.GetFiles(AppDir, "*.c", 0);
+                
+                //deletes unnecessary files
                 try
                 {
                     //deletes unnecessary files
