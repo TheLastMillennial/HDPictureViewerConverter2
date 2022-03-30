@@ -686,8 +686,8 @@ namespace HDPictureViewerConverter
                 }catch (Exception ex)
                 {
                     errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: \n" + ex.ToString() + "\n", Color.Red);
-                    MessageBox.Show("An error occured while deleting unnecesary files. Check red text for more information.", "ERROR");
-                    break;
+                    //MessageBox.Show("An error occured while deleting unnecesary files. Check red text for more information.", "ERROR");
+                    
                 }
 
 
@@ -714,6 +714,7 @@ namespace HDPictureViewerConverter
                     MessageBox.Show("An error occured while deleting or creating a directory. Check red text for more information.", "ERROR");
                     break;
                 }
+
                 //moves appvars to correct lovation
                 int location;
                 string newName,test;
