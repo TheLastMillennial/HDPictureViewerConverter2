@@ -193,42 +193,61 @@ namespace HDPictureViewerConverter
 
                 imagesToConvert++;
                 img = Image.FromFile(file);
-                // Bitmap bmp = (Bitmap)Bitmap.FromFile(File); Unused.
                 filename = Path.GetFileName(file);
                 filenamewe = Path.GetFileNameWithoutExtension(file);
                 filenamee = Path.GetExtension(file);
 
-                bool stopConversion = false;
-                foreach(char c in filename)
+                if (file.Contains(' ') || char.IsDigit(filename[0]))
                 {
-                    if(c.Equals(' '))
+                    try
                     {
-                        errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. Your image file name must NOT contain whitespace (Use underscores instead). Please rename this file and try again!\n\n";
-                        errorsTxtBox.AppendText(errors, Color.Red);
-                        stopConversion = true;
-                        break;
-                    }
-                    if (stopConversion)
-                        break;
-                }
-                if (stopConversion)
-                    continue;
+                        //copy filename to then make it valid
+                        string renamedFile = "";
+                        //get only alphanumeric chars from string
+                        foreach(char c in filenamewe)
+                        {
+                            if (char.IsLetterOrDigit(c))
+                            {
+                                renamedFile += c;
+                            }
+                        }
 
-                
-                errorsTxtBox.AppendText("\n+ Information: Starting Conversion of " + filename+"\n");
-                if (char.IsDigit(filename[0]))
-                {
-                    errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. Your image file name MUST start with a letter. Please rename this file and try again!\n\n";
-                    errorsTxtBox.AppendText(errors, Color.Red);
-                     
-                    continue;
+
+                        //first character must be a letter.
+                        if (char.IsDigit(renamedFile[0]))
+                        {
+                   
+                            //Z will ensure image shows up at the bottom of calculator's memory management screen and out of the way of more important appvars
+                            renamedFile = "Z" + renamedFile;
+                        }
+                            
+                        //makes new image with the new name with the extension tacked on.
+                        File.Copy(file, renamedFile+filenamee);
+
+                        //overwrite outdated variables
+                        img = Image.FromFile(renamedFile+filenamee);                       
+                        filename = renamedFile + filenamee; 
+                        filenamewe =renamedFile;
+                        
+                    }
+                    catch(Exception e)
+                    {
+                        errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. The converter attempted to create a renamed copy but failed. Your image file name must NOT contain whitespace (Use underscores instead). Your image file name should also start with a letter. Please rename this file and try again!\n\n";
+                        errorsTxtBox.AppendText(errors, Color.Red);
+                        //skips rest of conversion for this loop
+                        continue;
+                    }
                 }
+         
+                errorsTxtBox.AppendText("\n+ Information: Starting Conversion of " + filename+"\n");
+                
                 //Checks if the file is a png. If it's not, convert it to png
                 if (!(Path.GetExtension(filename).Equals(".png")))
                 {
                     using (MemoryStream ms = new MemoryStream())
                     {
                         img.Save(ms, ImageFormat.Png);
+                        
                     }
                 }
 
@@ -372,7 +391,16 @@ namespace HDPictureViewerConverter
                     {
                         if (File.Exists(AppDir+filename+".png"))
                             File.Delete(AppDir+filename+".png");
-                        finalImage.Save(AppDir + filename, ImageFormat.Png);
+
+                        //for some reason you need a memory stream to avoid "A generic error occurred in GDI+" exception
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            finalImage.Save(ms, ImageFormat.Png);
+                            Image tstImg = Image.FromStream(ms);
+                            tstImg.Save(AppDir + filename + ".png", ImageFormat.Png);
+                        }
+                        
+                        
                     }catch(Exception ex)
                     {
                         errorsTxtBox.AppendText("An error occured while saving files: " + ex.ToString(),Color.Red);
