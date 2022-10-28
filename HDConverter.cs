@@ -24,6 +24,10 @@ namespace HDPictureViewerConverter
             InitializeComponent();
             SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory, System.Security.Principal.WindowsIdentity.GetCurrent().Name);
             resizeComboBox.SelectedIndex = 0;
+            convimgReady();
+            //this is just here for the pre-release. File should be properly deleted by the full release
+            errorsTxtBox.AppendText("\nWarning: In this pre-release all .png, .c, and .h files will be deleted in this folder!",Color.Orange);
+
         }
 
         //Gives me the ability to write to sub-folders.
@@ -100,6 +104,11 @@ namespace HDPictureViewerConverter
         //User clicked 'Open Images to Convert'
         private void OpenImgBtn_Click(object sender, EventArgs e)
         {
+            if (doesPngExists())
+            {
+                MessageBox.Show("Do NOT put image files in the same folder as this application or else they will be deleted! Put this application in a folder without any images. Click OK to cancel.", "ERROR");
+                return;
+            }
             //Opens the dialog for user to select images to convert
             if (!convimgReady())
             {
@@ -141,7 +150,7 @@ namespace HDPictureViewerConverter
             if (!System.IO.File.Exists(AppDir + @"\convimg.exe"))
             {
 
-                errors += "ERROR: All images not converted! Make sure you have convimg.exe at the following directory: \n" + AppDir + "\n\n";
+                errors += "ERROR: Make sure you have convimg.exe at the following directory: \n" + AppDir + "\n\n";
                 errorsTxtBox.AppendText(errors,Color.Red);
                 
                 ready = false ;
@@ -164,6 +173,16 @@ namespace HDPictureViewerConverter
                 }
             }
             return ready;
+        }
+
+        private bool doesPngExists() {
+
+            String AppDir = AppDomain.CurrentDomain.BaseDirectory;
+            string[] findFiles = Directory.GetFiles(AppDir, "*.png", 0);
+            if (findFiles.Length != 0)
+                return true;
+            else
+                return false;
         }
 
         private void convertImg(String[] f)
@@ -323,7 +342,7 @@ namespace HDPictureViewerConverter
 
                             //MessageBox.Show("Height: " + height + "Width: " + width);
                         }
-                        errorsTxtBox.AppendText("Successfully resized to desired setting!", Color.Gray);
+                        errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
                     }
                     else if (resizeComboBox.SelectedIndex == 2)
                     {
@@ -337,15 +356,15 @@ namespace HDPictureViewerConverter
                         pictureBox.Width = img.Width;
                         pictureBox.Height = img.Height;
                         pictureBox.Image = (Image)img;
-                        errorsTxtBox.AppendText("Information: Successfully resized to desired setting!", Color.Gray);
+                        errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
                     }
                     else
-                        errorsTxtBox.AppendText("Information: Did not resize image", Color.Gray);
+                        errorsTxtBox.AppendText("\nInformation: Did not resize image", Color.Gray);
 
 
                     //checks if image will fit on calculator
                     if (width * height > 3000000)
-                        errors += "Warning: \"" + filename + "\" is incredibly large (" + width * height + " bytes) and will likely not fit on the calculator! Please make the file under 3,000,000 bytes or use the resizing tools provided in this application.\n\n";
+                        errors += "Warning: \"" + filename + "\" is incredibly large (" + width * height + " bytes) and will likely not fit on the calculator! Please make the file under 3,000,000 bytes or use the resizing options provided in this application.\n\n";
                     else if (width * height > 1000000)
                         errors += "Warning: \"" + filename + "\" is very large (" + width * height + " bytes) and you may need to delete files before you send over this image!\n";
 
@@ -397,7 +416,7 @@ namespace HDPictureViewerConverter
                     pictureBox.Height = 80 * vertSquares;
                     pictureBox.Image = finalImage;
 
-                    //checks if convPNG exists, if so, try to copy it. If not, abort.
+                    //checks if convimg exists, if so, try to copy it. If not, abort.
                     if (convimgReady())
                     {
                         try
@@ -434,8 +453,7 @@ namespace HDPictureViewerConverter
 
                     
 
-                    lettersID = Interaction.InputBox("Enter an alphabetic character followed by any ASCII character (A-Z and 0-9).\n" +
-                        "To avoid issues, run the HDPICV program on your calculator, press [mode] and look at the bottom where it says\"Safe Appvar Name\"",
+                    lettersID = Interaction.InputBox("Enter an alphabetic character followed by any ASCII character (A-Z and 0-9).\n",
                         "Enter Appvar Name", "AA");
                     if (lettersID.Length == 0)
                         return;
@@ -443,7 +461,6 @@ namespace HDPictureViewerConverter
                     while (lettersID.Length != 2 || !isAlphaNumeric(lettersID))
                     {
                         lettersID = Interaction.InputBox("Error: You did not enter alphanumeric characters!\nEnter two capital alphanumeric characters (A-Z and 0-9).\n" +
-                        "To avoid issues, run the HDPICV program on your calculator, press [mode] and look at the bottom where it says\"Safe Appvar Name\"\n" +
                         "Do you think you shouldn't be getting this error message and you can't get rid of it? Type \"terminate\" to immediately kill this program. Then contact the developer on Github",
                         "Enter Appvar Name", "AA");
                         if (lettersID.Length == 0)
@@ -548,7 +565,7 @@ namespace HDPictureViewerConverter
                             yamlConverts.Add("\n  - name: " + lettersID + num +
                                 "\n    palette: my_palette" +
                                 "\n    images:" +
-                                "\n      - " + saveName);//.Substring(0, saveName.Length - 4)) ;
+                                "\n      - " + saveName);
 
                             yamlOutputsImg.Add("\n  - type: appvar \n" +
                                 "    name: " + lettersID + num + "\n" +
@@ -779,6 +796,7 @@ namespace HDPictureViewerConverter
             }
          
         }
+
     }
 }
 
