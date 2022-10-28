@@ -47,3 +47,8 @@ It also contains the Message box which will output any important information inc
 
 ## Issues:
 Report issues to the Github repo: https://github.com/TheLastMillennial/HDPictureViewerConverter2/issues
+
+## Utilized Programs
+This program utilizes convimg, a tool created by MateoConLechuga. It is used in the C toolchain for the TI-84 Plus CE. Its license is in the `CONVIMG_LICENSE` file.
+You can find the source code for convimg here: https://github.com/mateoconlechuga/convimg
+All the tools for the C toolchain can be found here: https://github.com/CE-Programming/toolchain
