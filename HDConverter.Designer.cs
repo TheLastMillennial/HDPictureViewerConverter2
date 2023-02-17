@@ -57,6 +57,8 @@
             this.creditLabel = new System.Windows.Forms.Label();
             this.convertBox = new System.Windows.Forms.GroupBox();
             this.overlayConvert = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.bgWorker = new System.ComponentModel.BackgroundWorker();
             this.OptionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxCores)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
@@ -354,6 +356,19 @@
             this.overlayConvert.TabIndex = 9;
             this.overlayConvert.Text = "Convert Pictures";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(989, 369);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(147, 105);
+            this.button1.TabIndex = 12;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // bgWorker
+            // 
+            this.bgWorker.WorkerSupportsCancellation = true;
+            // 
             // HDpicConverterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -361,6 +376,7 @@
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(8)))), ((int)(((byte)(8)))));
             this.ClientSize = new System.Drawing.Size(1211, 881);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.convertBox);
             this.Controls.Add(this.creditLabel);
             this.Controls.Add(this.infoBox);
@@ -416,6 +432,8 @@
         private System.Windows.Forms.Label overlayConvert;
         private System.Windows.Forms.NumericUpDown maxCores;
         private System.Windows.Forms.Label CoresLabel;
+        private System.Windows.Forms.Button button1;
+        private System.ComponentModel.BackgroundWorker bgWorker;
     }
 }
 

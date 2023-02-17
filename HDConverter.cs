@@ -30,7 +30,7 @@ namespace HDPictureViewerConverter
                 maxCores.Value = 1;
             convimgReady();
             //this is just here for the pre-release. File should be properly deleted by the full release
-            errorsTxtBox.AppendText("\nWarning: In this pre-release all .png, .c, and .h files will be deleted in this folder!", Color.Orange);
+            //errorsTxtBox.AppendText("\nWarning: In this pre-release all .png, .c, and .h files will be deleted in this folder!", Color.Orange);
 
         }
 
@@ -123,9 +123,52 @@ namespace HDPictureViewerConverter
             InitializeOpenFileDialog();
             DialogResult Dlg = this.selectImagesDialog.ShowDialog();
             if (Dlg == System.Windows.Forms.DialogResult.OK)
-                convertImg(selectImagesDialog.FileNames);
+            {
+                //Disable UI controls to prevent user interaction during conversion
+                OpenImgBtn.Enabled = false;
+                //Create a new BackgroundWorker instance
+                BackgroundWorker bgWorker = new BackgroundWorker();
+                //Subscribe to the DoWork event
+                bgWorker.DoWork += new DoWorkEventHandler(bgWorker_DoWork);
+                //Subscribe to the ProgressChanged event
+                bgWorker.ProgressChanged += new ProgressChangedEventHandler(bgWorker_ProgressChanged);
+                //Subscribe to the RunWorkerCompleted event
+                bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWorker_RunWorkerCompleted);
+                //Enable progress reporting and cancellation
+                bgWorker.WorkerReportsProgress = true;
+                bgWorker.WorkerSupportsCancellation = true;
+                //Start the background worker and pass the selected file names as argument
+                bgWorker.RunWorkerAsync(selectImagesDialog.FileNames);
+            }
+
+        }
+        //Background worker DoWork event handler
+        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string[] fileNames = (string[])e.Argument;
+            //Cast the sender object to a BackgroundWorker instance
+            BackgroundWorker bgWorker = (BackgroundWorker)sender;
+            //Call the convertImg method and pass the BackgroundWorker instance as parameter
+            convertImg(fileNames, bgWorker);
         }
 
+        //Background worker ProgressChanged event handler
+        private void bgWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            //Update the progress bar and status label with the current progress value
+            progBar.Value = e.ProgressPercentage;
+            //errorsTxtBox.AppendText( e.UserState.ToString());
+        }
+
+        //Background worker RunWorkerCompleted event handler
+        private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            //Enable the Open Images button and clear the status label
+            OpenImgBtn.Enabled = true;
+            //errorsTxtBox.AppendText("worker done");
+        }
+
+        /********************/
 
         private void OpenImgBtn_DragOver(object sender, DragEventArgs e)
         {
@@ -142,7 +185,8 @@ namespace HDPictureViewerConverter
         }
         private void OpenImgBtn_DragDrop(object sender, DragEventArgs e)
         {
-            convertImg((string[])e.Data.GetData(DataFormats.FileDrop, false));
+            //convertImg((string[])e.Data.GetData(DataFormats.FileDrop, false));
+            MessageBox.Show("Not supported");
         }
 
         //checks if convimg.exe and convimg.yaml exists
@@ -155,7 +199,7 @@ namespace HDPictureViewerConverter
             {
 
                 errors += "ERROR: Make sure you have convimg.exe at the following directory: \n" + AppDir + "\n\n";
-                errorsTxtBox.AppendText(errors, Color.Red);
+                //errorsTxtBox.AppendText(errors, Color.Red);
 
                 ready = false;
             }
@@ -166,13 +210,13 @@ namespace HDPictureViewerConverter
 
                     using (File.Create(AppDir + @"\convimg.yaml")) { }
                     if (verboseLogging.Checked)
-                        errorsTxtBox.AppendText("Information: convimg.yaml was not found but has been successfully created at the following directory: \n" + AppDir + "\n\n", Color.Gray);
+                        //errorsTxtBox.AppendText("Information: convimg.yaml was not found but has been successfully created at the following directory: \n" + AppDir + "\n\n", Color.Gray);
                     ready = true;
                 }
                 catch (Exception )
                 {
                     errors += "ERROR: convimg.yaml was not found and could not be automatically created at the following directory: \n" + AppDir + "\n\n";
-                    errorsTxtBox.AppendText(errors, Color.Red);
+                    //errorsTxtBox.AppendText(errors, Color.Red);
                     ready = false;
                 }
             }
@@ -189,7 +233,7 @@ namespace HDPictureViewerConverter
                 return false;
         }
 
-        private void convertImg(String[] f)
+        private void convertImg(String[] f, BackgroundWorker bgWorker)
         {
 
             bool validFilename = true;
@@ -200,17 +244,17 @@ namespace HDPictureViewerConverter
             //gets current dir of this program
             String AppDir = AppDomain.CurrentDomain.BaseDirectory;
 
-            subPicLabel.Visible = true;
-            subPicBox.Visible = true;
-
+            //subPicLabel.Visible = true;
+            //subPicBox.Visible = true;
+            
 
             //sets errors box colors to nominal
-            errorsTxtBox.ForeColor = SystemColors.ControlText;
+            ////errorsTxtBox.ForeColor = SystemColors.ControlText;
 
             foreach (String file in f)
             {
                 //Sets progress bar
-                progress(0, 2, "Initial Image Loading");
+                //progress(0, 2, "Initial Image Loading");
 
                 imagesToConvert++;
                 img = Image.FromFile(file);
@@ -268,14 +312,14 @@ namespace HDPictureViewerConverter
                     {
                         
                         errors += "ERROR: \"" + filename + "\" Was NOT converted because it does not have a valid name. The converter attempted to create a renamed copy but failed. Your image file name must NOT contain whitespace (Use underscores instead). Your image file name should also start with a letter. Please rename this file and try again!\n\n";
-                        errorsTxtBox.AppendText(errors, Color.Red);
+                        ////errorsTxtBox.AppendText(errors, Color.Red);
                         //skips rest of conversion for this loop
                         continue;
                     }
                 }
 
 
-                errorsTxtBox.AppendText("\nInformation: Starting Conversion of " + filename + "\n", Color.Gray);
+                ////errorsTxtBox.AppendText("\nInformation: Starting Conversion of " + filename + "\n", Color.Gray);
 
                 //Checks if the file is a png. If it's not, convert it to png
                 if (!fileExtension.Equals(".png"))
@@ -289,8 +333,8 @@ namespace HDPictureViewerConverter
                     }
                 }
 
-                if (verboseLogging.Checked && !validFilename)
-                    errorsTxtBox.AppendText("\nInformation: The file name was not valid or the file was not already a PNG. A corrected copy of the image will be made. The copy will be deleted when the program finishes (the original image will not be modified or deleted).\n", Color.Gray);
+                //if (verboseLogging.Checked && !validFilename)
+                    ////errorsTxtBox.AppendText("\nInformation: The file name was not valid or the file was not already a PNG. A corrected copy of the image will be made. The copy will be deleted when the program finishes (the original image will not be modified or deleted).\n", Color.Gray);
 
                 //if the file name is valid and it was already a PNG, then there no local copy of the image was made. 
                 // since there was no local copy made, just directly access the image from the file location the user gave us.
@@ -311,11 +355,11 @@ namespace HDPictureViewerConverter
                             DialogResult result = MessageBox.Show("\"" + filename + "\" is insanely large and as a result may take a long time to convert or outright crash this program due to high RAM usage.\nNote: Your calculator will most liekly not be able handle such a large image if you did not select to resize it. \nDo you want to continue anyways?", "Warning: Large Image", MessageBoxButtons.YesNo);
                             if (result == DialogResult.No)
                                 break;
-                            errorsTxtBox.AppendText("Information: Insanely large image conversion manually activated by user.\n", Color.Orange);
+                            ////errorsTxtBox.AppendText("Information: Insanely large image conversion manually activated by user.\n", Color.Orange);
                         }
                         pictureBox.Image = img;
 
-                        progress(1);
+                        //progress(1);
                         /* resize the image to reasonable size for the palette */
                         //convimg cannot handle anything larger than 2896
                         imgForPalette = resizeMaintainAspectRatio(img, 2800, 2800);
@@ -323,7 +367,7 @@ namespace HDPictureViewerConverter
                         if (imgForPalette == null)
                         {
                             errors = "ERROR: \"" + filename + "\" could not be resized for palette. Perhaps the image is too large.";
-                            errorsTxtBox.AppendText(errors, Color.Red);
+                            ////errorsTxtBox.AppendText(errors, Color.Red);
                             break;
                         }
                         //save imag ewhich will be used as the palette
@@ -334,7 +378,7 @@ namespace HDPictureViewerConverter
                         catch (Exception ex)
                         {
                             errors = "ERROR: \"" + filename + "\" could not be resized for palette. Perhaps the image is too large. Error returned: " + ex.ToString();
-                            errorsTxtBox.AppendText(errors, Color.Red);
+                            ////errorsTxtBox.AppendText(errors, Color.Red);
                             break;
                         }
 
@@ -345,7 +389,7 @@ namespace HDPictureViewerConverter
                          * Maintain aspect ratio
                          * Stretch to fit */
                         progress(0, 1, "Resizing Image");
-                        errorsTxtBox.AppendText("Resizing image to desired setting", Color.Gray);
+                        ////errorsTxtBox.AppendText("Resizing image to desired setting", Color.Gray);
 
                         /* maintain aspect ratio */
                         if (resizeComboBox.SelectedIndex == 1)
@@ -360,33 +404,33 @@ namespace HDPictureViewerConverter
                             if (img == null)
                             {
                                 errors = "ERROR: \"" + filename + "\" could not be resized. Perhaps the image is too large.";
-                                errorsTxtBox.AppendText(errors, Color.Red);
+                                ////errorsTxtBox.AppendText(errors, Color.Red);
                                 break;
                             }
-                            else
-                                errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
+                            //else
+                                ////errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
                         }
                         else if (resizeComboBox.SelectedIndex == 2)
                         {
                             /* Stretch to fit */
-                            if (width == 320 || height == 240)
-                                errorsTxtBox.AppendText("Information: \"" + filename + "\" already has dimensions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n", Color.Gray);
-                            else
+                            //if (width == 320 || height == 240)
+                                ////errorsTxtBox.AppendText("Information: \"" + filename + "\" already has dimensions of " + width + "x" + height + " and cannot be resized any better with Stretch to fit as the setting.\n", Color.Gray);
+                            //else
                                 img = ResizeImage(img, 320, 240);
                             pictureBox.Width = img.Width;
                             pictureBox.Height = img.Height;
                             pictureBox.Image = (Image)img;
-                            errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
+                            ////errorsTxtBox.AppendText("\nInformation: Successfully resized to desired setting!", Color.Gray);
                         }
-                        else
-                            errorsTxtBox.AppendText("\nInformation: Did not resize image", Color.Gray);
+                        //else
+                            ////errorsTxtBox.AppendText("\nInformation: Did not resize image", Color.Gray);
 
 
 
                         newDimensionsLbl.Text = "New Dimensions: " + Math.Round(width).ToString() + "x" + Math.Round(height).ToString();
-                        progress(1);
+                        //progress(1);
 
-                        progress(0, 4, "Setting up image to slice");
+                        //progress(0, 4, "Setting up image to slice");
                         //Slicing image
                         //finds how many 80x80 squares are needed to fit this image
                         int horizSquares = (int)Math.Ceiling(width / 80), horizOffset = 0;
@@ -405,7 +449,7 @@ namespace HDPictureViewerConverter
                         using (SolidBrush brush = new SolidBrush(Color.Black))
                             gfx.FillRectangle(brush, 0, 0, backgroundimg.Width, backgroundimg.Height);
 
-                        progress(1);
+                        //progress(1);
 
                         Image firstImage = img, secondImage = backgroundimg;
                         var finalImage = new Bitmap(80 * horizSquares, 80 * vertSquares);
@@ -426,7 +470,7 @@ namespace HDPictureViewerConverter
                         {
                             finalImage = (Bitmap)img;
                         }
-                        progress(2);
+                        //progress(2);
 
                         //show in a winform picturebox used 
                         pictureBox.Width = 80 * horizSquares;
@@ -454,14 +498,14 @@ namespace HDPictureViewerConverter
                             }
                             catch (Exception ex)
                             {
-                                errorsTxtBox.AppendText("An error occured while saving files: " + ex.ToString(), Color.Red);
+                                //errorsTxtBox.AppendText("An error occured while saving files: " + ex.ToString(), Color.Red);
                                 MessageBox.Show("An error occured while accessing files. Check red text for more information.", "ERROR");
                                 return;
                             }
 
 
                         }
-                        progress(3);
+                        //progress(3);
 
                         //Creates a rectangle that will be used to cut each individual square
                         Rectangle cropRect = new Rectangle(0, 0, 80, 80);
@@ -535,10 +579,10 @@ namespace HDPictureViewerConverter
                         //yamlOutputsImg.Add("\n\noutputs:");
 
 
-                        progress(4);
-                        progress(0, vertSquares * horizSquares, "Slicing Image:");
-                        if (verboseLogging.Checked)
-                            errorsTxtBox.AppendText("Information: Starting slicing of image.\n", Color.Gray);
+                        //progress(4);
+                        //progress(0, vertSquares * horizSquares, "Slicing Image:");
+                        //if (verboseLogging.Checked)
+                            //errorsTxtBox.AppendText("Information: Starting slicing of image.\n", Color.Gray);
                         //Cuts each 80x80 square
                         int sliced = 0;
 
@@ -601,10 +645,10 @@ namespace HDPictureViewerConverter
                                     "      - " + lettersID + num);
 
                                 //dispalys progress back to user
-                                progress(sliced++);
+                                //progress(sliced++);
                                 progInfoLbl.Text = "Slicing Image: " + sliced.ToString() + "/" + vertSquares * horizSquares;
                             }
-                        errorsTxtBox.AppendText("\nInformation: Slice Successful!\n", Color.Gray);
+                        //errorsTxtBox.AppendText("\nInformation: Slice Successful!\n", Color.Gray);
 
                         //This saves the palette for the image
                         yamlOutputsPal.Add("\n  - type: appvar" +
@@ -673,8 +717,8 @@ namespace HDPictureViewerConverter
                         while (Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
                         {
                             Thread.Sleep(500);
-                            if (verboseLogging.Checked)
-                                errorsTxtBox.AppendText("Waiting for convimg... " + DateTime.Now.ToString() + " /n") ;
+                            //if (verboseLogging.Checked)
+                                //errorsTxtBox.AppendText("Waiting for convimg... " + DateTime.Now.ToString() + " /n") ;
 
                         }
                     }
@@ -697,27 +741,27 @@ namespace HDPictureViewerConverter
             
 
 
-            errorsTxtBox.AppendText("Finished!\n\n", Color.Green);
-            progress(1, 1, "Finished!");
+            //errorsTxtBox.AppendText("Finished!\n\n", Color.Green);
+            //progress(1, 1, "Finished!");
         }
 
         void willFitOnCalculator(string path)
         {
-            long size;
+            long size=0;
             string sizeErr="";
             if (verboseLogging.Checked)
-                errorsTxtBox.AppendText("Information: Getting Folder Size\n", Color.Gray);
+                //errorsTxtBox.AppendText("Information: Getting Folder Size\n", Color.Gray);
 
             try
             {
                 size = GetFolderSize(path);
-                if (verboseLogging.Checked)
-                    errorsTxtBox.AppendText("Folder Size: "+size.ToString(), Color.Gray);
+                //if (verboseLogging.Checked)
+                    //errorsTxtBox.AppendText("Folder Size: "+size.ToString(), Color.Gray);
             }
             catch
             {
-                if (verboseLogging.Checked)
-                    errorsTxtBox.AppendText("ERROR: Could not get folder size\n" + path.ToString() + "\n", Color.Red);
+                //if (verboseLogging.Checked)
+                    //errorsTxtBox.AppendText("ERROR: Could not get folder size\n" + path.ToString() + "\n", Color.Red);
                 return;
             }
             
@@ -726,7 +770,7 @@ namespace HDPictureViewerConverter
             else if (size > 1000000)//1mb
                 sizeErr += "Warning: Picture is very large (" + size + " bytes) and you may need to delete files before you send over this image!\n";
 
-            errorsTxtBox.AppendText(sizeErr+"\n", Color.Orange);
+            //errorsTxtBox.AppendText(sizeErr+"\n", Color.Orange);
         }
 
         //successful cleanup returns true
@@ -737,28 +781,28 @@ namespace HDPictureViewerConverter
             //files to delete go in this list. ALL files in the current directory with these extensions will be deleted.
             string[] fileExtensions = {filenamewe + ".png",filenamee, ".yaml", ".lst" };
             //updates the progress bar to 0 with a max of the file length +2. The +2 accounts for moving the files after deleting them.
-            progress(0, fileExtensions.Length, "Cleaning up - Deleting Unnecessary Files");
+            //progress(0, fileExtensions.Length, "Cleaning up - Deleting Unnecessary Files");
 
             //deletes unnecessary files
             for (int i = 0; i < fileExtensions.Length; i++)
             {
                 try
                 {
-                    if (verboseLogging.Checked)
-                        errorsTxtBox.AppendText("Deleting files: *" + fileExtensions[i]+"\n", Color.Gray);
+                    //if (verboseLogging.Checked)
+                        //errorsTxtBox.AppendText("Deleting files: *" + fileExtensions[i]+"\n", Color.Gray);
 
                     findFiles = Directory.GetFiles(AppDir, "*"+fileExtensions[i], 0);
                     foreach (string s in findFiles)
                     {
                         System.IO.File.Delete(s);
                         /*if (verboseLogging.Checked)
-                            errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n", Color.Gray);*/
+                            //errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n", Color.Gray);*/
                     }
-                    progress(i);
+                    //progress(i);
                 }
                 catch (Exception ex)
                 {
-                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: \n " + ex.ToString() + "\n", Color.Red);
+                    //errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting unnecessary files: \n " + ex.ToString() + "\n", Color.Red);
                 }
             }
 
@@ -781,7 +825,7 @@ namespace HDPictureViewerConverter
             }
             catch (Exception ex)
             {
-                errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting/ creating a directory: \n" + ex.ToString() + "\n", Color.Red);
+                //errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while deleting/ creating a directory: \n" + ex.ToString() + "\n", Color.Red);
                 MessageBox.Show("An error occured while deleting or creating a directory. Check red text for more information.", "ERROR");
                 return false;
             }
@@ -793,7 +837,7 @@ namespace HDPictureViewerConverter
             string newName, test;
 
             findFiles = Directory.GetFiles(AppDir, "*.8xv", 0);
-            progress(0, findFiles.Length, "Cleaning up - Moving Files");
+            //progress(0, findFiles.Length, "Cleaning up - Moving Files");
             
 
             foreach (string s in findFiles)
@@ -810,17 +854,17 @@ namespace HDPictureViewerConverter
                     test = AppDir + filenamewe + @"\" + newName;
                     System.IO.File.Move(s, test);
                     /*if (verboseLogging.Checked)
-                        errorsTxtBox.AppendText("Information: \"" + s + "\" was moved\n", Color.Gray);*/
-                    progress(++movedFiles);
+                        //errorsTxtBox.AppendText("Information: \"" + s + "\" was moved\n", Color.Gray);*/
+                    //progress(++movedFiles);
                 }
                 catch (Exception ex)
                 {
-                    errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while moving files: \n" + ex.ToString() + "\n", Color.Red);
+                    //errorsTxtBox.AppendText("ERROR: Although images were converted, an error occured while moving files: \n" + ex.ToString() + "\n", Color.Red);
                     MessageBox.Show("An error occured while moving files. Check red text for more information.", "ERROR");
                     return false;
                 }
             }
-            errorsTxtBox.AppendText("Information: Cleanup Successful!\n", Color.Gray);
+            //errorsTxtBox.AppendText("Information: Cleanup Successful!\n", Color.Gray);
             return true;
         }
 
@@ -879,14 +923,14 @@ namespace HDPictureViewerConverter
             //wait for convimg to return
             if (wait)
                 convimgRunning.WaitForExit();
-            if (verboseLogging.Checked)
-                errorsTxtBox.AppendText("Information: convimg" + core.ToString() + " returned successfully!\n", Color.Gray);
+            //if (verboseLogging.Checked)
+                //errorsTxtBox.AppendText("Information: convimg" + core.ToString() + " returned successfully!\n", Color.Gray);
         }
 
           void writeYaml(string AppDir, List<string>yaml, int core)
         {
             if (verboseLogging.Checked)
-                errorsTxtBox.AppendText("Information: writing to convimg" + core.ToString() + ".yaml.\n",Color.Gray);
+                //errorsTxtBox.AppendText("Information: writing to convimg" + core.ToString() + ".yaml.\n",Color.Gray);
             // write a line of text to the file
             using (StreamWriter tw = new StreamWriter(AppDir + @"convimg" + core.ToString() + ".yaml")) //@"\bin\" + filename +
             {
@@ -895,8 +939,8 @@ namespace HDPictureViewerConverter
                 tw.Close();
                 
             }
-            if (verboseLogging.Checked)
-                errorsTxtBox.AppendText("Information: write successful! Starting convimg.exe\n", Color.Green);
+            //if (verboseLogging.Checked)
+                //errorsTxtBox.AppendText("Information: write successful! Starting convimg.exe\n", Color.Green);
         }
 
         //crops image to desired size
