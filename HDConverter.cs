@@ -327,13 +327,13 @@ namespace HDPictureViewerConverter
                             break;
                         }
                         //save imag ewhich will be used as the palette
-                        try 
+                        try
                         {
                             imgForPalette.Save(AppDir + filename + "Palette.png", ImageFormat.Png);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
-                            errors = "ERROR: \"" + filename + "\" could not be resized for palette. Perhaps the image is too large. Error returned: "+ex.ToString();
+                            errors = "ERROR: \"" + filename + "\" could not be resized for palette. Perhaps the image is too large. Error returned: " + ex.ToString();
                             errorsTxtBox.AppendText(errors, Color.Red);
                             break;
                         }
@@ -382,7 +382,7 @@ namespace HDPictureViewerConverter
                             errorsTxtBox.AppendText("\nInformation: Did not resize image", Color.Gray);
 
 
-                        
+
                         newDimensionsLbl.Text = "New Dimensions: " + Math.Round(width).ToString() + "x" + Math.Round(height).ToString();
                         progress(1);
 
@@ -515,7 +515,7 @@ namespace HDPictureViewerConverter
                         List<string> yamlLinesList = new List<string>();
                         List<string> yamlPalettes = new List<string>();
                         List<string> yamlOutputsPal = new List<string>();
-                        string yamlOutputHeader = "\n\noutputs:"; 
+                        string yamlOutputHeader = "\n\noutputs:";
                         List<string> yamlOutputsImg = new List<string>();
                         string yamlConvertHeader = "\n\nconverts:";
                         List<string> yamlConverts = new List<string>();
@@ -628,25 +628,24 @@ namespace HDPictureViewerConverter
                         /*if (totalSquares > 100)
                             cores = (int)maxCores.Value;*/
 
-                        //how many images to convert per core.
-                        int squaresPerCore = (int)Math.Round(((decimal)totalSquares / (decimal)cores));
-
-                        //if the amount of imgaes cannot be divided equally, set a flag so we know to account for the 'fraction' of an image
-                        bool fractionalSquares = false;
-                        if (Math.IEEERemainder((double)totalSquares, (double)cores) != 0)
-                            fractionalSquares = true;
+                        //how many images to convert per core. ceiling so we don't leave out any images
+                        int squaresPerCore = (int)Math.Ceiling(((decimal)totalSquares / (decimal)cores));
 
                         //give each core a job asyncronously
-                        //**** DEBUG WARNING *****//
+                        //**** DEBUG WARNING ****//
                         // RUNNING CONVIMG SEQUENTIALLY INSTEAD OF SIMULTANEOUSLY WILL DELETE PREVIOUS CONVIMG OUTPUTS //
+
 
                         //creates a yaml file for each core. Then processes it.
                         for (int core = 0; core < cores; core++)
                         {
                             //calculate where our starting and ending points are in the yamlConverts list.
                             int start = (squaresPerCore * core);
-                            //core will be 0 initially so we add 1 to account for that. Add 1 if we could not cleanly divide up squares per core
-                            int end = (squaresPerCore * (core + 1)) + (fractionalSquares ? 1 : 0);
+                            //core will be 0 initially so we add 1 to account for that.
+                            int end = squaresPerCore * (core + 1);
+                            //prevent convering images that may not exist
+                            if (end > totalSquares)
+                                end = totalSquares;
 
                             /* get the yaml commands in order. Palette first, then converts, then outputs */
                             //adds the palette
@@ -655,26 +654,34 @@ namespace HDPictureViewerConverter
                             allYaml[core].Add(yamlConvertHeader);
                             for (int i = start; i < end && i < totalSquares; i++)
                                 allYaml[core].Add(yamlConverts[i]);
-                            
+
                             //adds the outputs
                             allYaml[core].Add(yamlOutputHeader);
                             for (int i = start; i < end && i < totalSquares; i++)
                                 allYaml[core].Add(yamlOutputsImg[i]);
-                            
+
                             //finalizes the palette
                             allYaml[core] = allYaml[core].Concat(yamlOutputsPal).ToList();
 
                             //sends the yaml list to convimg to process
-                            processYaml(AppDir, allYaml[core], core, core+1 < cores ? false : true);
+                            processYaml(AppDir, allYaml[core], core, core + 1 < cores ? false : true);
 
                         }
+                        //Waits for convimg to finish by constantly checking if all the appvars have been converted.
+                        //without this delay, cleanup happens too soon.
+                        //todo: ensure program can't get stuck waiting if convimg errors out
+                        while (Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
+                        {
+                            Thread.Sleep(500);
+                            if (verboseLogging.Checked)
+                                errorsTxtBox.AppendText("Waiting for convimg... " + DateTime.Now.ToString() + " /n") ;
 
+                        }
                     }
                     
                 }
 
-                //Waits for convimg to finish
-                Thread.Sleep(500);
+                
                 //start cleanup
                 if (!cleanupFiles(AppDir, fileExtension, fileNoExtension))
                     break;
@@ -728,7 +735,7 @@ namespace HDPictureViewerConverter
             
             string[] findFiles;
             //files to delete go in this list. ALL files in the current directory with these extensions will be deleted.
-            string[] fileExtensions = {filenamewe + ".png",filenamee, ".yaml" };
+            string[] fileExtensions = {filenamewe + ".png",filenamee, ".yaml", ".lst" };
             //updates the progress bar to 0 with a max of the file length +2. The +2 accounts for moving the files after deleting them.
             progress(0, fileExtensions.Length, "Cleaning up - Deleting Unnecessary Files");
 
