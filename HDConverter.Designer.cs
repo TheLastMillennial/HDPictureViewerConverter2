@@ -33,6 +33,8 @@
             this.OpenImgBtn = new System.Windows.Forms.Button();
             this.OpenConvertedBtn = new System.Windows.Forms.Button();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
+            this.maxCores = new System.Windows.Forms.NumericUpDown();
+            this.CoresLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.ResizeDescLabel = new System.Windows.Forms.Label();
             this.verboseLogging = new System.Windows.Forms.CheckBox();
@@ -56,6 +58,7 @@
             this.convertBox = new System.Windows.Forms.GroupBox();
             this.overlayConvert = new System.Windows.Forms.Label();
             this.OptionsGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.maxCores)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
             this.infoBox.SuspendLayout();
@@ -87,6 +90,8 @@
             // 
             // OptionsGroupBox
             // 
+            this.OptionsGroupBox.Controls.Add(this.maxCores);
+            this.OptionsGroupBox.Controls.Add(this.CoresLabel);
             this.OptionsGroupBox.Controls.Add(this.label1);
             this.OptionsGroupBox.Controls.Add(this.ResizeDescLabel);
             this.OptionsGroupBox.Controls.Add(this.verboseLogging);
@@ -94,10 +99,43 @@
             this.OptionsGroupBox.Controls.Add(this.resizeComboBox);
             this.OptionsGroupBox.Location = new System.Drawing.Point(594, 21);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
-            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 216);
+            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 316);
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
             this.OptionsGroupBox.Text = "Options";
+            // 
+            // maxCores
+            // 
+            this.maxCores.Location = new System.Drawing.Point(135, 159);
+            this.maxCores.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.maxCores.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.maxCores.Name = "maxCores";
+            this.maxCores.Size = new System.Drawing.Size(76, 31);
+            this.maxCores.TabIndex = 15;
+            this.maxCores.ThousandsSeparator = true;
+            this.maxCores.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.maxCores.ValueChanged += new System.EventHandler(this.maxCores_ValueChanged);
+            // 
+            // CoresLabel
+            // 
+            this.CoresLabel.AutoSize = true;
+            this.CoresLabel.Location = new System.Drawing.Point(7, 161);
+            this.CoresLabel.Name = "CoresLabel";
+            this.CoresLabel.Size = new System.Drawing.Size(122, 25);
+            this.CoresLabel.TabIndex = 14;
+            this.CoresLabel.Text = "Max Cores:";
             // 
             // label1
             // 
@@ -120,7 +158,7 @@
             // verboseLogging
             // 
             this.verboseLogging.AutoSize = true;
-            this.verboseLogging.Location = new System.Drawing.Point(12, 165);
+            this.verboseLogging.Location = new System.Drawing.Point(12, 267);
             this.verboseLogging.Name = "verboseLogging";
             this.verboseLogging.Size = new System.Drawing.Size(207, 29);
             this.verboseLogging.TabIndex = 3;
@@ -168,7 +206,7 @@
             // 
             // pictureBox
             // 
-            this.pictureBox.Location = new System.Drawing.Point(701, 472);
+            this.pictureBox.Location = new System.Drawing.Point(702, 578);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(320, 240);
             this.pictureBox.TabIndex = 3;
@@ -177,7 +215,7 @@
             // 
             // subPicBox
             // 
-            this.subPicBox.Location = new System.Drawing.Point(701, 255);
+            this.subPicBox.Location = new System.Drawing.Point(702, 361);
             this.subPicBox.Name = "subPicBox";
             this.subPicBox.Size = new System.Drawing.Size(222, 211);
             this.subPicBox.TabIndex = 4;
@@ -188,7 +226,7 @@
             // subPicLabel
             // 
             this.subPicLabel.AutoSize = true;
-            this.subPicLabel.Location = new System.Drawing.Point(594, 255);
+            this.subPicLabel.Location = new System.Drawing.Point(595, 361);
             this.subPicLabel.Name = "subPicLabel";
             this.subPicLabel.Size = new System.Drawing.Size(93, 25);
             this.subPicLabel.TabIndex = 5;
@@ -198,7 +236,7 @@
             // MainPicLabel
             // 
             this.MainPicLabel.AutoSize = true;
-            this.MainPicLabel.Location = new System.Drawing.Point(594, 472);
+            this.MainPicLabel.Location = new System.Drawing.Point(595, 578);
             this.MainPicLabel.Name = "MainPicLabel";
             this.MainPicLabel.Size = new System.Drawing.Size(101, 25);
             this.MainPicLabel.TabIndex = 6;
@@ -252,7 +290,6 @@
             this.errorsTxtBox.Location = new System.Drawing.Point(13, 117);
             this.errorsTxtBox.Name = "errorsTxtBox";
             this.errorsTxtBox.ReadOnly = true;
-            this.errorsTxtBox.ShortcutsEnabled = false;
             this.errorsTxtBox.Size = new System.Drawing.Size(541, 305);
             this.errorsTxtBox.TabIndex = 10;
             this.errorsTxtBox.Text = "Logs:";
@@ -338,6 +375,7 @@
             this.Text = "HD Picture Viewer Converter 2";
             this.OptionsGroupBox.ResumeLayout(false);
             this.OptionsGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.maxCores)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).EndInit();
             this.infoBox.ResumeLayout(false);
@@ -376,6 +414,8 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label overlayConvert;
+        private System.Windows.Forms.NumericUpDown maxCores;
+        private System.Windows.Forms.Label CoresLabel;
     }
 }
 
