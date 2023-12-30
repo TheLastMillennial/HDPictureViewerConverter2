@@ -24,7 +24,7 @@ namespace HDPictureViewerConverter
         {
             InitializeComponent();
             SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory, System.Security.Principal.WindowsIdentity.GetCurrent().Name);
-            resizeComboBox.SelectedIndex = 0;
+            resizeComboBox.SelectedIndex = 1;
             maxCores.Value = Environment.ProcessorCount;
             if (maxCores.Value < 1)
                 maxCores.Value = 1;
@@ -77,8 +77,6 @@ namespace HDPictureViewerConverter
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
                     graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-
-
                 }
             }
 
@@ -381,16 +379,14 @@ namespace HDPictureViewerConverter
                         else
                             errorsTxtBox.AppendText("\nInformation: Did not resize image", Color.Gray);
 
-
-
-                        newDimensionsLbl.Text = "New Dimensions: " + Math.Round(width).ToString() + "x" + Math.Round(height).ToString();
+                        newDimensionsLbl.Text = "New Dimensions: " + img.Width.ToString() + "x" + img.Height.ToString();
                         progress(1);
 
                         progress(0, 4, "Setting up image to slice");
                         //Slicing image
                         //finds how many 80x80 squares are needed to fit this image
-                        int horizSquares = (int)Math.Ceiling(width / 80), horizOffset = 0;
-                        int vertSquares = (int)Math.Ceiling(height / 80), vertOffset = 0;
+                        int horizSquares = (int)Math.Ceiling(img.Width / 80.0), horizOffset = 0;
+                        int vertSquares  = (int)Math.Ceiling(img.Height / 80.0),vertOffset = 0;
                         squaresLbl.Text = "Squares Used: " + horizSquares.ToString() + "x" + vertSquares.ToString();
 
                         /*
@@ -678,10 +674,8 @@ namespace HDPictureViewerConverter
 
                         }
                     }
-                    
                 }
 
-                
                 //start cleanup
                 if (!cleanupFiles(AppDir, fileExtension, fileNoExtension))
                     break;
@@ -790,7 +784,7 @@ namespace HDPictureViewerConverter
 
             //moves appvars to correct location
             int location, movedFiles=0;
-            string newName, test;
+            string newName, newFilePath;
 
             findFiles = Directory.GetFiles(AppDir, "*.8xv", 0);
             progress(0, findFiles.Length, "Cleaning up - Moving Files");
@@ -807,8 +801,8 @@ namespace HDPictureViewerConverter
 
                 try
                 {
-                    test = AppDir + filenamewe + @"\" + newName;
-                    System.IO.File.Move(s, test);
+                    newFilePath = AppDir + filenamewe + @"\" + newName;
+                    System.IO.File.Move(s, newFilePath);
                     /*if (verboseLogging.Checked)
                         errorsTxtBox.AppendText("Information: \"" + s + "\" was moved\n", Color.Gray);*/
                     progress(++movedFiles);
@@ -835,13 +829,13 @@ namespace HDPictureViewerConverter
             else
             {
                 //gets the width correct
-                scale = (double)img.Width / maxHeight;
+                scale = (double)img.Width / maxWidth;
                 height = (double)img.Height / scale;
                 width = (double)img.Width / scale;
                 //checks if the height will fit on screen. If not, get correct height and resize width accordingly
-                if (height > maxWidth)
+                if (height > maxHeight)
                 {
-                    scale = (double)img.Height / maxWidth;
+                    scale = (double)img.Height / maxHeight;
                     height = (double)img.Height / scale;
                     width = (double)img.Width / scale;
                 }
@@ -960,12 +954,15 @@ namespace HDPictureViewerConverter
             {
                 case 0:
                     ResizeDescLabel.Text = "Best quality.\nOriginal Resolution.\nLargest file size.";
+                    maxCores.Value = Environment.ProcessorCount;
                     break;
                 case 1:
                     ResizeDescLabel.Text= "Lower quality.\nReduces picture resolution to at most 320x240.\nSmallest file size.";
+                    maxCores.Value = 1;
                     break;
                 case 2:
                     ResizeDescLabel.Text = "Lower quality.\nForce picture resolution to be exactly 320x240.\nSmall file size.";
+                    maxCores.Value = 1;
                     break;
                 default:
                     ResizeDescLabel.Text = "Description:";
@@ -977,6 +974,11 @@ namespace HDPictureViewerConverter
         private void maxCores_ValueChanged(object sender, EventArgs e)
         {
             maxCores.Value = Math.Ceiling(maxCores.Value);
+            if (maxCores.Value > Environment.ProcessorCount)
+                maxCores.Value = Environment.ProcessorCount;
+            if (maxCores.Value < 1)
+                maxCores.Value = 1;
+            
         }
 
 
