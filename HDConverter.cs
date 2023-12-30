@@ -25,9 +25,15 @@ namespace HDPictureViewerConverter
             InitializeComponent();
             SetFullAccessPermission(AppDomain.CurrentDomain.BaseDirectory, System.Security.Principal.WindowsIdentity.GetCurrent().Name);
             resizeComboBox.SelectedIndex = 1;
-            maxCores.Value = Environment.ProcessorCount;
-            if (maxCores.Value < 1)
+            if (resizeComboBox.SelectedIndex == 1)
                 maxCores.Value = 1;
+            else
+            {
+                maxCores.Value = Environment.ProcessorCount;
+                if (maxCores.Value < 1)
+                    maxCores.Value = 1;
+            }
+            
             convimgReady();
             //this is just here for the pre-release. File should be properly deleted by the full release
             errorsTxtBox.AppendText("\nWarning: In this pre-release all .png, .c, and .h files will be deleted in this folder!", Color.Orange);
