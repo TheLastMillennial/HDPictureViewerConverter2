@@ -329,7 +329,7 @@
             this.creditLabel.Name = "creditLabel";
             this.creditLabel.Size = new System.Drawing.Size(248, 25);
             this.creditLabel.TabIndex = 10;
-            this.creditLabel.Text = "TheLastMillennial - 2023";
+            this.creditLabel.Text = "TheLastMillennial - 2024";
             // 
             // convertBox
             // 
