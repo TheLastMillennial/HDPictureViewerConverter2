@@ -341,7 +341,8 @@ namespace HDPictureViewerConverter
 
             if (advancedMode.Checked && !validFilename)
                 Invoke(new Action(() => { logBox.AppendText("\nINFO: The file name was not valid or the file was not already a PNG. A corrected copy of the image will be made. The copy will be deleted when the program finishes (the original image will not be modified or deleted).", Color.Gray); }));
-
+            if (haltCalled())
+                return;
             //if the file name is valid and it was already a PNG, then there no local copy of the image was made. 
             // since there was no local copy made, just directly access the image from the file location the user gave us.
             // note: file is the file path the user provided. filename is the local copy.
@@ -634,6 +635,12 @@ namespace HDPictureViewerConverter
                     for (vertOffset = 0; vertOffset < vertSquares; vertOffset++)
                         for (horizOffset = 0; horizOffset < horizSquares; horizOffset++)
                         {
+                            if (haltCalled())
+                            {
+                                cleanupFiles(AppDir, fileExtension, fileNoExtension);
+                                return;
+                            }
+
                             saveName = "";//@"bin\" + filename + @"\"
                             num = "";
                             cropRect.X = horizOffset * 80;
@@ -734,10 +741,15 @@ namespace HDPictureViewerConverter
                     //creates a yaml file for each core. Then processes it.
                     for (int core = 0; core < cores; core++)
                     {
+
+                        if (haltCalled()) { cleanupFiles(AppDir, fileExtension, fileNoExtension); return; }
+
+
                         Invoke(new Action(() =>
-                        {
-                            progress(core, cores, "Launching " + cores + " convimg " + (cores == 1 ? "instance" : "instance"));
-                        }));
+                    {
+                        progress(core, cores, "Launching " + cores + " convimg " + (cores == 1 ? "instance" : "instance"));
+                    }));
+
                         //calculate where our starting and ending points are in the yamlConverts list.
                         int start = (squaresPerCore * core);
                         //core will be 0 initially so we add 1 to account for that.
@@ -775,6 +787,8 @@ namespace HDPictureViewerConverter
                     }));
                     while (Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
                     {
+                        if (haltCalled())
+                        { cleanupFiles(AppDir, fileExtension, fileNoExtension);return; }
                         Thread.Sleep(250);
                         Invoke(new Action(() =>
                         {
@@ -829,17 +843,14 @@ namespace HDPictureViewerConverter
 
         long getFinalImageSize(string path)
         {
-            long size;
             try
             {
-                size = GetFolderSize(path);
+                return GetFolderSize(path);
             }
             catch
             {
-                size = -1;
+                return -1;
             }
-
-            return size;
         }
 
         //successful cleanup returns true
@@ -1108,6 +1119,18 @@ namespace HDPictureViewerConverter
 
         }
 
+        bool haltCalled()
+        {
+            bool halt = false;
+            Invoke(new Action(() =>
+            {
+                halt = !StopConversionBtn.Enabled;
+                if (halt)
+                    logBox.AppendText("\nFAIL: Stop signal detected.", Color.Red);
+            }));
+            return halt;
+        }
+
         private void progBar_Click(object sender, EventArgs e)
         {
 
@@ -1120,6 +1143,7 @@ namespace HDPictureViewerConverter
 
         private void verboseLogging_CheckedChanged_1(object sender, EventArgs e)
         {
+            DeleteAllFilesBtn.Visible = advancedMode.Checked;
             CoresLabel.Visible = advancedMode.Checked;
             maxCores.Visible = advancedMode.Checked;
             origDimensionsLbl.Visible = advancedMode.Checked;
@@ -1144,28 +1168,94 @@ namespace HDPictureViewerConverter
 
         private async void button1_Click(object sender, EventArgs e)
         {
+            StopConversionBtn.Visible = true;
+            StopConversionBtn.Enabled = true;
+            convertPicBtn.Visible = false;
+
             progress(0, 1, "Initializing next picture...");
-            String picPath = "";
-            String picID = "";
-            int setting = resizeComboBox.SelectedIndex;
-            foreach (TextBox tb in pictureListTable.Controls)
+
+            Process[] pname = Process.GetProcessesByName("convimg");
+            if (pname.Length != 0)
             {
-                //if it's read only then it's the file path
-                if (tb.ReadOnly == true)
+                logBox.AppendText("\nFAIL: Cannot convert\nReason: " + pname.Length + " convimg instances still running. Cannot convert pictures until convimg is closed.", Color.Red);
+            }
+            else
+            {
+                String picPath = "";
+                String picID = "";
+                int setting = resizeComboBox.SelectedIndex;
+                foreach (TextBox tb in pictureListTable.Controls)
                 {
-                    picPath = tb.Text;
-                }
-                else
-                {
-                    picID = tb.Text;
-
-                    await Task.Run(() => convertImg(picPath, picID, setting));
-                    //Task ts = Task.Run(() =>  );
-
-                    picPath = "";
-                    picID = "";
+                    //if it's read only then it's the file path
+                    if (tb.ReadOnly == true)
+                    {
+                        picPath = tb.Text;
+                    }
+                    else
+                    {
+                        picID = tb.Text;
+                        if (StopConversionBtn.Enabled)
+                            await Task.Run(() => convertImg(picPath, picID, setting));
+                        StopConversionBtn.Visible = false;
+                        StopConversionBtn.Enabled = true;
+                        convertPicBtn.Visible = true;
+                        picPath = "";
+                        picID = "";
+                    }
                 }
             }
+            StopConversionBtn.Visible = false;
+            StopConversionBtn.Enabled = true;
+            convertPicBtn.Visible = true;
+        }
+
+        private void StopConversionBtn_Click(object sender, EventArgs e)
+        {
+            //program will check if btn is enabled. If enabled, continue. If disabled, halt.
+            StopConversionBtn.Enabled = false;
+            StopConversionBtn.Visible = false;
+            convertPicBtn.Visible = true;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            string AppDir = AppDomain.CurrentDomain.BaseDirectory;
+            if (MessageBox.Show("Delete ALL of the following file types at the following directory?\nThis cannnot be undone." +
+                "\n\nFile types:\n .png .8xv .yaml .lst" +
+                "\n\nDirectory:\n" + AppDir, "Delete Files?", MessageBoxButtons.YesNo) == DialogResult.Yes) 
+            {
+                logBox.AppendText("\nINFO: User selected to delete all files." , Color.Gray);
+                string[] findFiles;
+                //files to delete go in this list. ALL files in the current directory with these extensions will be deleted.
+                string[] fileExtensions = { ".png", ".yaml", ".lst", ".8xv" };
+
+                //deletes unnecessary files
+                for (int i = 0; i < fileExtensions.Length; i++)
+                {
+                    try
+                    {
+                        findFiles = Directory.GetFiles(AppDir, "*" + fileExtensions[i], 0);
+                        foreach (string s in findFiles)
+                        {
+                            System.IO.File.Delete(s);
+                            /*if (verboseLogging.Checked)
+                                errorsTxtBox.AppendText("Information: \"" + s + "\" was deleted\n", Color.Gray);*/
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        logBox.AppendText("\nWARNING: An error occured while deleting files: \n " + ex.ToString(), Color.Red); 
+                    }
+                }
+                logBox.AppendText("\nINFO: Finished deleting all files.", Color.Green);
+
+            }
+            else
+            {
+                return;
+            }
+            
         }
     }
 }
