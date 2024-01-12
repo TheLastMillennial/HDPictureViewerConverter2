@@ -48,7 +48,7 @@
             this.progBar = new System.Windows.Forms.ProgressBar();
             this.infoBox = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.errorsTxtBox = new System.Windows.Forms.RichTextBox();
+            this.logBox = new System.Windows.Forms.RichTextBox();
             this.squaresLbl = new System.Windows.Forms.Label();
             this.newDimensionsLbl = new System.Windows.Forms.Label();
             this.origDimensionsLbl = new System.Windows.Forms.Label();
@@ -259,7 +259,7 @@
             // infoBox
             // 
             this.infoBox.Controls.Add(this.label3);
-            this.infoBox.Controls.Add(this.errorsTxtBox);
+            this.infoBox.Controls.Add(this.logBox);
             this.infoBox.Controls.Add(this.squaresLbl);
             this.infoBox.Controls.Add(this.newDimensionsLbl);
             this.infoBox.Controls.Add(this.origDimensionsLbl);
@@ -279,18 +279,18 @@
             this.label3.TabIndex = 12;
             this.label3.Text = "Information";
             // 
-            // errorsTxtBox
+            // logBox
             // 
-            this.errorsTxtBox.BackColor = System.Drawing.Color.Black;
-            this.errorsTxtBox.ForeColor = System.Drawing.Color.Ivory;
-            this.errorsTxtBox.Location = new System.Drawing.Point(13, 28);
-            this.errorsTxtBox.Name = "errorsTxtBox";
-            this.errorsTxtBox.ReadOnly = true;
-            this.errorsTxtBox.Size = new System.Drawing.Size(541, 430);
-            this.errorsTxtBox.TabIndex = 10;
-            this.errorsTxtBox.TabStop = false;
-            this.errorsTxtBox.Text = "Logs:";
-            this.errorsTxtBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
+            this.logBox.BackColor = System.Drawing.Color.Black;
+            this.logBox.ForeColor = System.Drawing.Color.Ivory;
+            this.logBox.Location = new System.Drawing.Point(13, 28);
+            this.logBox.Name = "logBox";
+            this.logBox.ReadOnly = true;
+            this.logBox.Size = new System.Drawing.Size(541, 430);
+            this.logBox.TabIndex = 10;
+            this.logBox.TabStop = false;
+            this.logBox.Text = "Logs:";
+            this.logBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
             // 
             // squaresLbl
             // 
@@ -445,7 +445,7 @@
         private System.Windows.Forms.Label squaresLbl;
         private System.Windows.Forms.Label newDimensionsLbl;
         private System.Windows.Forms.Label origDimensionsLbl;
-        private System.Windows.Forms.RichTextBox errorsTxtBox;
+        private System.Windows.Forms.RichTextBox logBox;
         private System.Windows.Forms.Label creditLabel;
         private System.Windows.Forms.GroupBox convertBox;
         private System.Windows.Forms.Label ResizeDescLabel;
