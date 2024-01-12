@@ -217,8 +217,9 @@
             this.idLbl.Size = new System.Drawing.Size(32, 25);
             this.idLbl.TabIndex = 16;
             this.idLbl.Text = "ID";
-            this.AllToolTip.SetToolTip(this.idLbl, "ID for the picture. Pictures with the same ID will overwrite eachother.\r\nFist cha" +
-        "racter must be a letter.\r\nSecond character can be either a letter or number.");
+            this.AllToolTip.SetToolTip(this.idLbl, "Randomly assigned ID for the picture. \r\nPictures with the same ID will overwrite " +
+        "eachother.\r\nFist character must be a letter.\r\nSecond character can be either a l" +
+        "etter or number.");
             // 
             // picturePathLbl
             // 
@@ -309,6 +310,7 @@
             this.newDimensionsLbl.Size = new System.Drawing.Size(178, 25);
             this.newDimensionsLbl.TabIndex = 1;
             this.newDimensionsLbl.Text = "New Dimensions:";
+            this.newDimensionsLbl.Visible = false;
             // 
             // origDimensionsLbl
             // 
@@ -318,6 +320,7 @@
             this.origDimensionsLbl.Size = new System.Drawing.Size(216, 25);
             this.origDimensionsLbl.TabIndex = 0;
             this.origDimensionsLbl.Text = "Original Dimensions: ";
+            this.origDimensionsLbl.Visible = false;
             // 
             // creditLabel
             // 

@@ -131,6 +131,8 @@ namespace HDPictureViewerConverter
             if (Dlg == System.Windows.Forms.DialogResult.OK)
             {
                 const int ROW_HEIGHT = 30;
+                Random random = new Random();
+
                 foreach (string fileName in selectImagesDialog.FileNames)
                 {
                     TextBox lblBox = new TextBox();
@@ -143,6 +145,13 @@ namespace HDPictureViewerConverter
                     TextBox inputBox = new TextBox();
                     inputBox.Width = (int)Math.Round(pictureListTable.Width * .2);
                     inputBox.MaxLength = 2;
+
+                    string randID = ((char)('A' + random.Next(26))).ToString();
+                    if (random.Next(36) < 10)//check whether to choose a random number or letter
+                        randID += ((char)('0' + random.Next(10))).ToString();
+                    else
+                        randID += ((char)('A' + random.Next(26))).ToString();
+                    inputBox.Text = randID;
 
                     //add controls to the panel
                     //pictureListTable.RowCount++;
@@ -504,7 +513,7 @@ namespace HDPictureViewerConverter
 
 
                         progress(1, 1, "Error check log.");
-                        errorsTxtBox.AppendText("\nFAIL: " + fileNoExtension + " \nReason: Invalid ID. First character must be letter. Second character must be letter or number.",Color.Red);
+                        errorsTxtBox.AppendText("\nFAIL: " + fileNoExtension + " \nReason: Invalid ID. First character must be letter. Second character must be letter or number.", Color.Red);
                         return;
                     }
 
