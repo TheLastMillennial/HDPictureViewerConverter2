@@ -30,24 +30,22 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HDpicConverterForm));
-            this.OpenImgBtn = new System.Windows.Forms.Button();
-            this.OpenConvertedBtn = new System.Windows.Forms.Button();
+            this.importPicBtn = new System.Windows.Forms.Button();
+            this.FindConvertedPicBtn = new System.Windows.Forms.Button();
             this.OptionsGroupBox = new System.Windows.Forms.GroupBox();
+            this.advancedMode = new System.Windows.Forms.CheckBox();
             this.maxCores = new System.Windows.Forms.NumericUpDown();
             this.CoresLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.ResizeDescLabel = new System.Windows.Forms.Label();
-            this.verboseLogging = new System.Windows.Forms.CheckBox();
             this.resizeLabel = new System.Windows.Forms.Label();
             this.resizeComboBox = new System.Windows.Forms.ComboBox();
             this.AllToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.idLbl = new System.Windows.Forms.Label();
+            this.picturePathLbl = new System.Windows.Forms.Label();
+            this.convertPicBtn = new System.Windows.Forms.Button();
             this.selectImagesDialog = new System.Windows.Forms.OpenFileDialog();
-            this.pictureBox = new System.Windows.Forms.PictureBox();
-            this.subPicBox = new System.Windows.Forms.PictureBox();
-            this.subPicLabel = new System.Windows.Forms.Label();
-            this.MainPicLabel = new System.Windows.Forms.Label();
             this.progBar = new System.Windows.Forms.ProgressBar();
-            this.progInfoLbl = new System.Windows.Forms.Label();
             this.infoBox = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
             this.errorsTxtBox = new System.Windows.Forms.RichTextBox();
@@ -56,57 +54,75 @@
             this.origDimensionsLbl = new System.Windows.Forms.Label();
             this.creditLabel = new System.Windows.Forms.Label();
             this.convertBox = new System.Windows.Forms.GroupBox();
+            this.progInfoLbl = new System.Windows.Forms.Label();
+            this.pictureListTable = new System.Windows.Forms.TableLayoutPanel();
             this.overlayConvert = new System.Windows.Forms.Label();
+            this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.subPicBox = new System.Windows.Forms.PictureBox();
             this.OptionsGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxCores)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
             this.infoBox.SuspendLayout();
             this.convertBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).BeginInit();
             this.SuspendLayout();
             // 
-            // OpenImgBtn
+            // importPicBtn
             // 
-            this.OpenImgBtn.AllowDrop = true;
-            this.OpenImgBtn.ForeColor = System.Drawing.Color.Black;
-            this.OpenImgBtn.Location = new System.Drawing.Point(13, 51);
-            this.OpenImgBtn.Name = "OpenImgBtn";
-            this.OpenImgBtn.Size = new System.Drawing.Size(265, 97);
-            this.OpenImgBtn.TabIndex = 0;
-            this.OpenImgBtn.Text = "Select and Convert Pictures";
-            this.OpenImgBtn.UseVisualStyleBackColor = true;
-            this.OpenImgBtn.Click += new System.EventHandler(this.OpenImgBtn_Click);
+            this.importPicBtn.AllowDrop = true;
+            this.importPicBtn.ForeColor = System.Drawing.Color.Black;
+            this.importPicBtn.Location = new System.Drawing.Point(13, 31);
+            this.importPicBtn.Name = "importPicBtn";
+            this.importPicBtn.Size = new System.Drawing.Size(170, 48);
+            this.importPicBtn.TabIndex = 0;
+            this.importPicBtn.Text = "Import Pictures";
+            this.AllToolTip.SetToolTip(this.importPicBtn, "Select pictures to be converted.");
+            this.importPicBtn.UseVisualStyleBackColor = true;
+            this.importPicBtn.Click += new System.EventHandler(this.OpenImgBtn_Click);
             // 
-            // OpenConvertedBtn
+            // FindConvertedPicBtn
             // 
-            this.OpenConvertedBtn.ForeColor = System.Drawing.Color.Black;
-            this.OpenConvertedBtn.Location = new System.Drawing.Point(289, 51);
-            this.OpenConvertedBtn.Name = "OpenConvertedBtn";
-            this.OpenConvertedBtn.Size = new System.Drawing.Size(265, 97);
-            this.OpenConvertedBtn.TabIndex = 1;
-            this.OpenConvertedBtn.Text = "Find Converted Pictures";
-            this.OpenConvertedBtn.UseVisualStyleBackColor = true;
-            this.OpenConvertedBtn.Click += new System.EventHandler(this.OpenConvertedBtn_Click);
+            this.FindConvertedPicBtn.ForeColor = System.Drawing.Color.Black;
+            this.FindConvertedPicBtn.Location = new System.Drawing.Point(293, 576);
+            this.FindConvertedPicBtn.Name = "FindConvertedPicBtn";
+            this.FindConvertedPicBtn.Size = new System.Drawing.Size(265, 57);
+            this.FindConvertedPicBtn.TabIndex = 1;
+            this.FindConvertedPicBtn.Text = "Find Converted Pictures";
+            this.AllToolTip.SetToolTip(this.FindConvertedPicBtn, "Find where converted pictures were saved.");
+            this.FindConvertedPicBtn.UseVisualStyleBackColor = true;
+            this.FindConvertedPicBtn.Click += new System.EventHandler(this.OpenConvertedBtn_Click);
             // 
             // OptionsGroupBox
             // 
+            this.OptionsGroupBox.Controls.Add(this.advancedMode);
             this.OptionsGroupBox.Controls.Add(this.maxCores);
             this.OptionsGroupBox.Controls.Add(this.CoresLabel);
             this.OptionsGroupBox.Controls.Add(this.label1);
             this.OptionsGroupBox.Controls.Add(this.ResizeDescLabel);
-            this.OptionsGroupBox.Controls.Add(this.verboseLogging);
             this.OptionsGroupBox.Controls.Add(this.resizeLabel);
             this.OptionsGroupBox.Controls.Add(this.resizeComboBox);
             this.OptionsGroupBox.Location = new System.Drawing.Point(594, 21);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
-            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 316);
+            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 209);
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
             this.OptionsGroupBox.Text = "Options";
             // 
+            // advancedMode
+            // 
+            this.advancedMode.AutoSize = true;
+            this.advancedMode.Location = new System.Drawing.Point(12, 163);
+            this.advancedMode.Name = "advancedMode";
+            this.advancedMode.Size = new System.Drawing.Size(200, 29);
+            this.advancedMode.TabIndex = 13;
+            this.advancedMode.Text = "Advanced Mode";
+            this.AllToolTip.SetToolTip(this.advancedMode, "Enable verbose logging and show some hidden features.");
+            this.advancedMode.UseVisualStyleBackColor = true;
+            this.advancedMode.CheckedChanged += new System.EventHandler(this.verboseLogging_CheckedChanged_1);
+            // 
             // maxCores
             // 
-            this.maxCores.Location = new System.Drawing.Point(135, 159);
+            this.maxCores.Location = new System.Drawing.Point(478, 163);
             this.maxCores.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -121,6 +137,8 @@
             this.maxCores.Size = new System.Drawing.Size(76, 31);
             this.maxCores.TabIndex = 15;
             this.maxCores.ThousandsSeparator = true;
+            this.AllToolTip.SetToolTip(this.maxCores, "Maximum number of convimg instances that will be launched when converting large i" +
+        "mages.");
             this.maxCores.Value = new decimal(new int[] {
             1,
             0,
@@ -131,11 +149,12 @@
             // CoresLabel
             // 
             this.CoresLabel.AutoSize = true;
-            this.CoresLabel.Location = new System.Drawing.Point(7, 161);
+            this.CoresLabel.Location = new System.Drawing.Point(350, 165);
             this.CoresLabel.Name = "CoresLabel";
             this.CoresLabel.Size = new System.Drawing.Size(122, 25);
             this.CoresLabel.TabIndex = 14;
             this.CoresLabel.Text = "Max Cores:";
+            this.CoresLabel.Click += new System.EventHandler(this.CoresLabel_Click);
             // 
             // label1
             // 
@@ -154,17 +173,6 @@
             this.ResizeDescLabel.Size = new System.Drawing.Size(132, 25);
             this.ResizeDescLabel.TabIndex = 4;
             this.ResizeDescLabel.Text = "Description: ";
-            // 
-            // verboseLogging
-            // 
-            this.verboseLogging.AutoSize = true;
-            this.verboseLogging.Location = new System.Drawing.Point(12, 267);
-            this.verboseLogging.Name = "verboseLogging";
-            this.verboseLogging.Size = new System.Drawing.Size(207, 29);
-            this.verboseLogging.TabIndex = 3;
-            this.verboseLogging.Text = "Verbose Logging";
-            this.verboseLogging.UseVisualStyleBackColor = true;
-            this.verboseLogging.CheckedChanged += new System.EventHandler(this.verboseLogging_CheckedChanged);
             // 
             // resizeLabel
             // 
@@ -187,7 +195,7 @@
             "Stretch to fit screen."});
             this.resizeComboBox.Location = new System.Drawing.Point(177, 31);
             this.resizeComboBox.Name = "resizeComboBox";
-            this.resizeComboBox.Size = new System.Drawing.Size(335, 33);
+            this.resizeComboBox.Size = new System.Drawing.Size(377, 33);
             this.resizeComboBox.TabIndex = 1;
             this.AllToolTip.SetToolTip(this.resizeComboBox, "Which resizing method should the program use?");
             this.resizeComboBox.SelectedIndexChanged += new System.EventHandler(this.resizeComboBox_SelectedIndexChanged);
@@ -199,66 +207,51 @@
             this.AllToolTip.ReshowDelay = 100;
             this.AllToolTip.ToolTipTitle = "Description:";
             // 
+            // idLbl
+            // 
+            this.idLbl.AutoSize = true;
+            this.idLbl.Location = new System.Drawing.Point(446, 110);
+            this.idLbl.Name = "idLbl";
+            this.idLbl.Size = new System.Drawing.Size(32, 25);
+            this.idLbl.TabIndex = 16;
+            this.idLbl.Text = "ID";
+            this.AllToolTip.SetToolTip(this.idLbl, "ID for the picture. Pictures with the same ID will overwrite eachother.\r\nFist cha" +
+        "racter must be a letter.\r\nSecond character can be either a letter or number.");
+            // 
+            // picturePathLbl
+            // 
+            this.picturePathLbl.AutoSize = true;
+            this.picturePathLbl.Location = new System.Drawing.Point(18, 110);
+            this.picturePathLbl.Name = "picturePathLbl";
+            this.picturePathLbl.Size = new System.Drawing.Size(129, 25);
+            this.picturePathLbl.TabIndex = 15;
+            this.picturePathLbl.Text = "Picture Path";
+            this.AllToolTip.SetToolTip(this.picturePathLbl, "The images that were selected.\r\n");
+            // 
+            // convertPicBtn
+            // 
+            this.convertPicBtn.ForeColor = System.Drawing.Color.Black;
+            this.convertPicBtn.Location = new System.Drawing.Point(13, 576);
+            this.convertPicBtn.Name = "convertPicBtn";
+            this.convertPicBtn.Size = new System.Drawing.Size(265, 57);
+            this.convertPicBtn.TabIndex = 12;
+            this.convertPicBtn.Text = "Convert Picures";
+            this.AllToolTip.SetToolTip(this.convertPicBtn, "Start conversion.");
+            this.convertPicBtn.UseVisualStyleBackColor = true;
+            this.convertPicBtn.Click += new System.EventHandler(this.button1_Click);
+            // 
             // selectImagesDialog
             // 
             this.selectImagesDialog.FileName = "selectImagesDialog";
             this.selectImagesDialog.Multiselect = true;
             // 
-            // pictureBox
-            // 
-            this.pictureBox.Location = new System.Drawing.Point(702, 578);
-            this.pictureBox.Name = "pictureBox";
-            this.pictureBox.Size = new System.Drawing.Size(320, 240);
-            this.pictureBox.TabIndex = 3;
-            this.pictureBox.TabStop = false;
-            this.pictureBox.Visible = false;
-            // 
-            // subPicBox
-            // 
-            this.subPicBox.Location = new System.Drawing.Point(702, 361);
-            this.subPicBox.Name = "subPicBox";
-            this.subPicBox.Size = new System.Drawing.Size(222, 211);
-            this.subPicBox.TabIndex = 4;
-            this.subPicBox.TabStop = false;
-            this.subPicBox.Visible = false;
-            this.subPicBox.Click += new System.EventHandler(this.subPicBox_Click);
-            // 
-            // subPicLabel
-            // 
-            this.subPicLabel.AutoSize = true;
-            this.subPicLabel.Location = new System.Drawing.Point(595, 361);
-            this.subPicLabel.Name = "subPicLabel";
-            this.subPicLabel.Size = new System.Drawing.Size(93, 25);
-            this.subPicLabel.TabIndex = 5;
-            this.subPicLabel.Text = "Sub-Pic:";
-            this.subPicLabel.Visible = false;
-            // 
-            // MainPicLabel
-            // 
-            this.MainPicLabel.AutoSize = true;
-            this.MainPicLabel.Location = new System.Drawing.Point(595, 578);
-            this.MainPicLabel.Name = "MainPicLabel";
-            this.MainPicLabel.Size = new System.Drawing.Size(101, 25);
-            this.MainPicLabel.TabIndex = 6;
-            this.MainPicLabel.Text = "Main Pic:";
-            this.MainPicLabel.Visible = false;
-            // 
             // progBar
             // 
-            this.progBar.Location = new System.Drawing.Point(13, 194);
+            this.progBar.Location = new System.Drawing.Point(13, 686);
             this.progBar.Name = "progBar";
-            this.progBar.Size = new System.Drawing.Size(541, 65);
+            this.progBar.Size = new System.Drawing.Size(545, 65);
             this.progBar.TabIndex = 7;
-            // 
-            // progInfoLbl
-            // 
-            this.progInfoLbl.AutoSize = true;
-            this.progInfoLbl.Location = new System.Drawing.Point(16, 166);
-            this.progInfoLbl.MaximumSize = new System.Drawing.Size(500, 0);
-            this.progInfoLbl.Name = "progInfoLbl";
-            this.progInfoLbl.Size = new System.Drawing.Size(98, 25);
-            this.progInfoLbl.TabIndex = 8;
-            this.progInfoLbl.Text = "Progress";
+            this.progBar.Click += new System.EventHandler(this.progBar_Click);
             // 
             // infoBox
             // 
@@ -267,9 +260,9 @@
             this.infoBox.Controls.Add(this.squaresLbl);
             this.infoBox.Controls.Add(this.newDimensionsLbl);
             this.infoBox.Controls.Add(this.origDimensionsLbl);
-            this.infoBox.Location = new System.Drawing.Point(17, 343);
+            this.infoBox.Location = new System.Drawing.Point(594, 236);
             this.infoBox.Name = "infoBox";
-            this.infoBox.Size = new System.Drawing.Size(572, 446);
+            this.infoBox.Size = new System.Drawing.Size(572, 553);
             this.infoBox.TabIndex = 9;
             this.infoBox.TabStop = false;
             this.infoBox.Text = "Advanced Information";
@@ -279,25 +272,26 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(8, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(220, 25);
+            this.label3.Size = new System.Drawing.Size(118, 25);
             this.label3.TabIndex = 12;
-            this.label3.Text = "Advanced Information";
+            this.label3.Text = "Information";
             // 
             // errorsTxtBox
             // 
             this.errorsTxtBox.BackColor = System.Drawing.Color.Black;
-            this.errorsTxtBox.ForeColor = System.Drawing.Color.Green;
-            this.errorsTxtBox.Location = new System.Drawing.Point(13, 117);
+            this.errorsTxtBox.ForeColor = System.Drawing.Color.Ivory;
+            this.errorsTxtBox.Location = new System.Drawing.Point(13, 28);
             this.errorsTxtBox.Name = "errorsTxtBox";
             this.errorsTxtBox.ReadOnly = true;
-            this.errorsTxtBox.Size = new System.Drawing.Size(541, 305);
+            this.errorsTxtBox.Size = new System.Drawing.Size(541, 430);
             this.errorsTxtBox.TabIndex = 10;
             this.errorsTxtBox.Text = "Logs:";
+            this.errorsTxtBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
             // 
             // squaresLbl
             // 
             this.squaresLbl.AutoSize = true;
-            this.squaresLbl.Location = new System.Drawing.Point(12, 89);
+            this.squaresLbl.Location = new System.Drawing.Point(17, 512);
             this.squaresLbl.Name = "squaresLbl";
             this.squaresLbl.Size = new System.Drawing.Size(154, 25);
             this.squaresLbl.TabIndex = 2;
@@ -307,7 +301,7 @@
             // newDimensionsLbl
             // 
             this.newDimensionsLbl.AutoSize = true;
-            this.newDimensionsLbl.Location = new System.Drawing.Point(12, 64);
+            this.newDimensionsLbl.Location = new System.Drawing.Point(17, 487);
             this.newDimensionsLbl.Name = "newDimensionsLbl";
             this.newDimensionsLbl.Size = new System.Drawing.Size(178, 25);
             this.newDimensionsLbl.TabIndex = 1;
@@ -316,7 +310,7 @@
             // origDimensionsLbl
             // 
             this.origDimensionsLbl.AutoSize = true;
-            this.origDimensionsLbl.Location = new System.Drawing.Point(12, 39);
+            this.origDimensionsLbl.Location = new System.Drawing.Point(17, 462);
             this.origDimensionsLbl.Name = "origDimensionsLbl";
             this.origDimensionsLbl.Size = new System.Drawing.Size(216, 25);
             this.origDimensionsLbl.TabIndex = 0;
@@ -333,17 +327,45 @@
             // 
             // convertBox
             // 
-            this.convertBox.Controls.Add(this.overlayConvert);
-            this.convertBox.Controls.Add(this.OpenImgBtn);
-            this.convertBox.Controls.Add(this.OpenConvertedBtn);
+            this.convertBox.Controls.Add(this.idLbl);
+            this.convertBox.Controls.Add(this.picturePathLbl);
             this.convertBox.Controls.Add(this.progInfoLbl);
+            this.convertBox.Controls.Add(this.pictureListTable);
+            this.convertBox.Controls.Add(this.convertPicBtn);
+            this.convertBox.Controls.Add(this.overlayConvert);
+            this.convertBox.Controls.Add(this.importPicBtn);
+            this.convertBox.Controls.Add(this.FindConvertedPicBtn);
             this.convertBox.Controls.Add(this.progBar);
             this.convertBox.Location = new System.Drawing.Point(17, 21);
             this.convertBox.Name = "convertBox";
-            this.convertBox.Size = new System.Drawing.Size(571, 316);
+            this.convertBox.Size = new System.Drawing.Size(571, 768);
             this.convertBox.TabIndex = 11;
             this.convertBox.TabStop = false;
             this.convertBox.Text = "Convert Pictures";
+            // 
+            // progInfoLbl
+            // 
+            this.progInfoLbl.AutoSize = true;
+            this.progInfoLbl.Location = new System.Drawing.Point(13, 647);
+            this.progInfoLbl.Name = "progInfoLbl";
+            this.progInfoLbl.Size = new System.Drawing.Size(98, 25);
+            this.progInfoLbl.TabIndex = 14;
+            this.progInfoLbl.Text = "Progress";
+            // 
+            // pictureListTable
+            // 
+            this.pictureListTable.AutoScroll = true;
+            this.pictureListTable.ColumnCount = 2;
+            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
+            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.pictureListTable.Location = new System.Drawing.Point(13, 141);
+            this.pictureListTable.Name = "pictureListTable";
+            this.pictureListTable.Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
+            this.pictureListTable.RowCount = 1;
+            this.pictureListTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.pictureListTable.Size = new System.Drawing.Size(545, 422);
+            this.pictureListTable.TabIndex = 13;
+            this.pictureListTable.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureListTable_Paint);
             // 
             // overlayConvert
             // 
@@ -354,6 +376,24 @@
             this.overlayConvert.TabIndex = 9;
             this.overlayConvert.Text = "Convert Pictures";
             // 
+            // pictureBox
+            // 
+            this.pictureBox.Location = new System.Drawing.Point(372, 794);
+            this.pictureBox.Name = "pictureBox";
+            this.pictureBox.Size = new System.Drawing.Size(100, 50);
+            this.pictureBox.TabIndex = 12;
+            this.pictureBox.TabStop = false;
+            this.pictureBox.Visible = false;
+            // 
+            // subPicBox
+            // 
+            this.subPicBox.Location = new System.Drawing.Point(266, 795);
+            this.subPicBox.Name = "subPicBox";
+            this.subPicBox.Size = new System.Drawing.Size(100, 50);
+            this.subPicBox.TabIndex = 13;
+            this.subPicBox.TabStop = false;
+            this.subPicBox.Visible = false;
+            // 
             // HDpicConverterForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -361,13 +401,11 @@
             this.AutoScroll = true;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(8)))), ((int)(((byte)(8)))), ((int)(((byte)(8)))));
             this.ClientSize = new System.Drawing.Size(1211, 881);
+            this.Controls.Add(this.subPicBox);
+            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.convertBox);
             this.Controls.Add(this.creditLabel);
             this.Controls.Add(this.infoBox);
-            this.Controls.Add(this.MainPicLabel);
-            this.Controls.Add(this.subPicLabel);
-            this.Controls.Add(this.subPicBox);
-            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.OptionsGroupBox);
             this.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -376,12 +414,12 @@
             this.OptionsGroupBox.ResumeLayout(false);
             this.OptionsGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maxCores)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).EndInit();
             this.infoBox.ResumeLayout(false);
             this.infoBox.PerformLayout();
             this.convertBox.ResumeLayout(false);
             this.convertBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.subPicBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -389,26 +427,20 @@
 
         #endregion
 
-        private System.Windows.Forms.Button OpenImgBtn;
-        private System.Windows.Forms.Button OpenConvertedBtn;
+        private System.Windows.Forms.Button importPicBtn;
+        private System.Windows.Forms.Button FindConvertedPicBtn;
         private System.Windows.Forms.GroupBox OptionsGroupBox;
         public System.Windows.Forms.ToolTip AllToolTip;
         private System.Windows.Forms.ComboBox resizeComboBox;
         private System.Windows.Forms.Label resizeLabel;
         private System.Windows.Forms.OpenFileDialog selectImagesDialog;
-        private System.Windows.Forms.PictureBox pictureBox;
-        private System.Windows.Forms.PictureBox subPicBox;
-        private System.Windows.Forms.Label subPicLabel;
-        private System.Windows.Forms.Label MainPicLabel;
         private System.Windows.Forms.ProgressBar progBar;
-        private System.Windows.Forms.Label progInfoLbl;
         private System.Windows.Forms.GroupBox infoBox;
         private System.Windows.Forms.Label squaresLbl;
         private System.Windows.Forms.Label newDimensionsLbl;
         private System.Windows.Forms.Label origDimensionsLbl;
         private System.Windows.Forms.RichTextBox errorsTxtBox;
         private System.Windows.Forms.Label creditLabel;
-        private System.Windows.Forms.CheckBox verboseLogging;
         private System.Windows.Forms.GroupBox convertBox;
         private System.Windows.Forms.Label ResizeDescLabel;
         private System.Windows.Forms.Label label1;
@@ -416,6 +448,14 @@
         private System.Windows.Forms.Label overlayConvert;
         private System.Windows.Forms.NumericUpDown maxCores;
         private System.Windows.Forms.Label CoresLabel;
+        private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.PictureBox subPicBox;
+        private System.Windows.Forms.Button convertPicBtn;
+        private System.Windows.Forms.CheckBox advancedMode;
+        private System.Windows.Forms.TableLayoutPanel pictureListTable;
+        private System.Windows.Forms.Label progInfoLbl;
+        private System.Windows.Forms.Label idLbl;
+        private System.Windows.Forms.Label picturePathLbl;
     }
 }
 
