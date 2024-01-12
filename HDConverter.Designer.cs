@@ -144,6 +144,7 @@
             0,
             0,
             0});
+            this.maxCores.Visible = false;
             this.maxCores.ValueChanged += new System.EventHandler(this.maxCores_ValueChanged);
             // 
             // CoresLabel
@@ -154,6 +155,7 @@
             this.CoresLabel.Size = new System.Drawing.Size(122, 25);
             this.CoresLabel.TabIndex = 14;
             this.CoresLabel.Text = "Max Cores:";
+            this.CoresLabel.Visible = false;
             this.CoresLabel.Click += new System.EventHandler(this.CoresLabel_Click);
             // 
             // label1
@@ -285,6 +287,7 @@
             this.errorsTxtBox.ReadOnly = true;
             this.errorsTxtBox.Size = new System.Drawing.Size(541, 430);
             this.errorsTxtBox.TabIndex = 10;
+            this.errorsTxtBox.TabStop = false;
             this.errorsTxtBox.Text = "Logs:";
             this.errorsTxtBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
             // 
@@ -356,13 +359,13 @@
             // 
             this.pictureListTable.AutoScroll = true;
             this.pictureListTable.ColumnCount = 2;
-            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.77778F));
+            this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
             this.pictureListTable.Location = new System.Drawing.Point(13, 141);
             this.pictureListTable.Name = "pictureListTable";
             this.pictureListTable.Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
             this.pictureListTable.RowCount = 1;
-            this.pictureListTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.pictureListTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
             this.pictureListTable.Size = new System.Drawing.Size(545, 422);
             this.pictureListTable.TabIndex = 13;
             this.pictureListTable.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureListTable_Paint);

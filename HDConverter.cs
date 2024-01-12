@@ -138,13 +138,14 @@ namespace HDPictureViewerConverter
                     lblBox.Width = (int)Math.Round(pictureListTable.Width * .7);
                     lblBox.Select(lblBox.Text.Length, 0);
                     lblBox.ReadOnly = true;
+                    lblBox.TabStop = false;
 
                     TextBox inputBox = new TextBox();
                     inputBox.Width = (int)Math.Round(pictureListTable.Width * .2);
                     inputBox.MaxLength = 2;
 
                     //add controls to the panel
-                    pictureListTable.RowCount++;
+                    //pictureListTable.RowCount++;
                     pictureListTable.RowStyles[0].Height = ROW_HEIGHT;
                     pictureListTable.RowStyles.Add(new RowStyle(SizeType.Absolute, ROW_HEIGHT));
                     pictureListTable.Controls.Add(lblBox);
