@@ -37,10 +37,6 @@ namespace HDPictureViewerConverter
             }
 
             convimgReady();
-            //this is just here for the pre-release. File should be properly deleted by the full release
-
-            logBox.AppendText("\nWarning: In this pre-release all .png, .c, and .h files will be deleted in this folder!", Color.Orange);
-
         }
 
         //Gives me the ability to write to sub-folders.
@@ -133,7 +129,7 @@ namespace HDPictureViewerConverter
             {
                 const int ROW_HEIGHT = 30;
                 Random random = new Random();
-
+                int tabIndex = 0;
                 foreach (string fileName in selectImagesDialog.FileNames)
                 {
                     TextBox lblBox = new TextBox();
@@ -146,6 +142,8 @@ namespace HDPictureViewerConverter
                     TextBox inputBox = new TextBox();
                     inputBox.Width = (int)Math.Round(pictureListTable.Width * .2);
                     inputBox.MaxLength = 2;
+                    inputBox.TabStop = true;
+                    inputBox.TabIndex= tabIndex++;
 
                     string randID = ((char)('A' + random.Next(26))).ToString();
                     if (random.Next(36) < 10)//check whether to choose a random number or letter
@@ -155,7 +153,7 @@ namespace HDPictureViewerConverter
                     inputBox.Text = randID;
 
                     //add controls to the panel
-                    //pictureListTable.RowCount++;
+                    pictureListTable.RowCount++;
                     pictureListTable.RowStyles[0].Height = ROW_HEIGHT;
                     pictureListTable.RowStyles.Add(new RowStyle(SizeType.Absolute, ROW_HEIGHT));
                     pictureListTable.Controls.Add(lblBox);
@@ -812,7 +810,7 @@ namespace HDPictureViewerConverter
                         else
                         {
                             if (advancedMode.Checked)
-                                Invoke(new Action(() => { logBox.AppendText("\nINFO: convimg still running", Color.Red); }));
+                                Invoke(new Action(() => { logBox.AppendText("\nINFO: convimg still running", Color.Gray); }));
 
                         }
                     }
@@ -1168,11 +1166,15 @@ namespace HDPictureViewerConverter
 
         private async void button1_Click(object sender, EventArgs e)
         {
+            //set up for impending conversion
             StopConversionBtn.Visible = true;
             StopConversionBtn.Enabled = true;
+            DeleteQueueBtn.Enabled = false;
+            DeleteAllFilesBtn.Enabled = false;
+
             convertPicBtn.Visible = false;
 
-            progress(0, 1, "Initializing next picture...");
+            
 
             Process[] pname = Process.GetProcessesByName("convimg");
             if (pname.Length != 0)
@@ -1181,6 +1183,7 @@ namespace HDPictureViewerConverter
             }
             else
             {
+                progress(0, 1, "Initializing next picture...");
                 String picPath = "";
                 String picID = "";
                 int setting = resizeComboBox.SelectedIndex;
@@ -1190,23 +1193,33 @@ namespace HDPictureViewerConverter
                     if (tb.ReadOnly == true)
                     {
                         picPath = tb.Text;
+                        
                     }
                     else
                     {
                         picID = tb.Text;
                         if (StopConversionBtn.Enabled)
                             await Task.Run(() => convertImg(picPath, picID, setting));
-                        StopConversionBtn.Visible = false;
-                        StopConversionBtn.Enabled = true;
-                        convertPicBtn.Visible = true;
                         picPath = "";
                         picID = "";
                     }
                 }
+                deleteQueue();
+                
             }
+            //done converting, enable necessary buttons
             StopConversionBtn.Visible = false;
             StopConversionBtn.Enabled = true;
+            DeleteQueueBtn.Enabled = true;
+            DeleteAllFilesBtn.Enabled = true;
             convertPicBtn.Visible = true;
+        }
+
+        private void deleteQueue()
+        {
+            //remove everything from queue
+            pictureListTable.Controls.Clear();
+            pictureListTable.RowCount = 0;
         }
 
         private void StopConversionBtn_Click(object sender, EventArgs e)
@@ -1256,6 +1269,11 @@ namespace HDPictureViewerConverter
                 return;
             }
             
+        }
+
+        private void DeleteQueueBtn_Click(object sender, EventArgs e)
+        {
+            deleteQueue();
         }
     }
 }

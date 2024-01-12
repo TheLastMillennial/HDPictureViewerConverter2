@@ -45,6 +45,7 @@
             this.picturePathLbl = new System.Windows.Forms.Label();
             this.convertPicBtn = new System.Windows.Forms.Button();
             this.DeleteAllFilesBtn = new System.Windows.Forms.Button();
+            this.DeleteQueueBtn = new System.Windows.Forms.Button();
             this.selectImagesDialog = new System.Windows.Forms.OpenFileDialog();
             this.progBar = new System.Windows.Forms.ProgressBar();
             this.infoBox = new System.Windows.Forms.GroupBox();
@@ -55,10 +56,10 @@
             this.origDimensionsLbl = new System.Windows.Forms.Label();
             this.creditLabel = new System.Windows.Forms.Label();
             this.convertBox = new System.Windows.Forms.GroupBox();
-            this.StopConversionBtn = new System.Windows.Forms.Button();
             this.progInfoLbl = new System.Windows.Forms.Label();
             this.pictureListTable = new System.Windows.Forms.TableLayoutPanel();
             this.overlayConvert = new System.Windows.Forms.Label();
+            this.StopConversionBtn = new System.Windows.Forms.Button();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.subPicBox = new System.Windows.Forms.PictureBox();
             this.OptionsGroupBox.SuspendLayout();
@@ -88,7 +89,7 @@
             this.FindConvertedPicBtn.Location = new System.Drawing.Point(293, 576);
             this.FindConvertedPicBtn.Name = "FindConvertedPicBtn";
             this.FindConvertedPicBtn.Size = new System.Drawing.Size(265, 57);
-            this.FindConvertedPicBtn.TabIndex = 1;
+            this.FindConvertedPicBtn.TabIndex = 5;
             this.FindConvertedPicBtn.Text = "Find Converted Pictures";
             this.AllToolTip.SetToolTip(this.FindConvertedPicBtn, "Find where converted pictures were saved.");
             this.FindConvertedPicBtn.UseVisualStyleBackColor = true;
@@ -116,9 +117,9 @@
             this.advancedMode.Location = new System.Drawing.Point(12, 163);
             this.advancedMode.Name = "advancedMode";
             this.advancedMode.Size = new System.Drawing.Size(200, 29);
-            this.advancedMode.TabIndex = 13;
+            this.advancedMode.TabIndex = 7;
             this.advancedMode.Text = "Advanced Mode";
-            this.AllToolTip.SetToolTip(this.advancedMode, "Enable verbose logging and show some hidden features.");
+            this.AllToolTip.SetToolTip(this.advancedMode, "Enable verbose logging and show hidden features.");
             this.advancedMode.UseVisualStyleBackColor = true;
             this.advancedMode.CheckedChanged += new System.EventHandler(this.verboseLogging_CheckedChanged_1);
             // 
@@ -137,7 +138,7 @@
             0});
             this.maxCores.Name = "maxCores";
             this.maxCores.Size = new System.Drawing.Size(76, 31);
-            this.maxCores.TabIndex = 15;
+            this.maxCores.TabIndex = 8;
             this.maxCores.ThousandsSeparator = true;
             this.AllToolTip.SetToolTip(this.maxCores, "Maximum number of convimg instances that will be launched when converting large i" +
         "mages.");
@@ -200,7 +201,7 @@
             this.resizeComboBox.Location = new System.Drawing.Point(177, 31);
             this.resizeComboBox.Name = "resizeComboBox";
             this.resizeComboBox.Size = new System.Drawing.Size(377, 33);
-            this.resizeComboBox.TabIndex = 1;
+            this.resizeComboBox.TabIndex = 6;
             this.AllToolTip.SetToolTip(this.resizeComboBox, "Which resizing method should the program use?");
             this.resizeComboBox.SelectedIndexChanged += new System.EventHandler(this.resizeComboBox_SelectedIndexChanged);
             // 
@@ -239,7 +240,7 @@
             this.convertPicBtn.Location = new System.Drawing.Point(13, 576);
             this.convertPicBtn.Name = "convertPicBtn";
             this.convertPicBtn.Size = new System.Drawing.Size(265, 57);
-            this.convertPicBtn.TabIndex = 12;
+            this.convertPicBtn.TabIndex = 4;
             this.convertPicBtn.Text = "Convert Picures";
             this.AllToolTip.SetToolTip(this.convertPicBtn, "Start conversion.");
             this.convertPicBtn.UseVisualStyleBackColor = true;
@@ -248,15 +249,27 @@
             // DeleteAllFilesBtn
             // 
             this.DeleteAllFilesBtn.ForeColor = System.Drawing.Color.Firebrick;
-            this.DeleteAllFilesBtn.Location = new System.Drawing.Point(225, 32);
+            this.DeleteAllFilesBtn.Location = new System.Drawing.Point(388, 31);
             this.DeleteAllFilesBtn.Name = "DeleteAllFilesBtn";
-            this.DeleteAllFilesBtn.Size = new System.Drawing.Size(333, 47);
-            this.DeleteAllFilesBtn.TabIndex = 18;
-            this.DeleteAllFilesBtn.Text = "Delete All Converted Files";
+            this.DeleteAllFilesBtn.Size = new System.Drawing.Size(170, 48);
+            this.DeleteAllFilesBtn.TabIndex = 3;
+            this.DeleteAllFilesBtn.Text = "Cleanup Files";
             this.AllToolTip.SetToolTip(this.DeleteAllFilesBtn, "Deletes all files associated with this converter including all .png files.");
             this.DeleteAllFilesBtn.UseVisualStyleBackColor = true;
             this.DeleteAllFilesBtn.Visible = false;
             this.DeleteAllFilesBtn.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // DeleteQueueBtn
+            // 
+            this.DeleteQueueBtn.ForeColor = System.Drawing.Color.Black;
+            this.DeleteQueueBtn.Location = new System.Drawing.Point(201, 31);
+            this.DeleteQueueBtn.Name = "DeleteQueueBtn";
+            this.DeleteQueueBtn.Size = new System.Drawing.Size(170, 48);
+            this.DeleteQueueBtn.TabIndex = 2;
+            this.DeleteQueueBtn.Text = "Delete Queue";
+            this.AllToolTip.SetToolTip(this.DeleteQueueBtn, "Remove all pictures from queue.");
+            this.DeleteQueueBtn.UseVisualStyleBackColor = true;
+            this.DeleteQueueBtn.Click += new System.EventHandler(this.DeleteQueueBtn_Click);
             // 
             // selectImagesDialog
             // 
@@ -298,12 +311,13 @@
             // 
             this.logBox.BackColor = System.Drawing.Color.Black;
             this.logBox.ForeColor = System.Drawing.Color.Ivory;
+            this.logBox.HideSelection = false;
             this.logBox.Location = new System.Drawing.Point(13, 28);
             this.logBox.Name = "logBox";
             this.logBox.ReadOnly = true;
+            this.logBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.logBox.Size = new System.Drawing.Size(541, 430);
-            this.logBox.TabIndex = 10;
-            this.logBox.TabStop = false;
+            this.logBox.TabIndex = 9;
             this.logBox.Text = "Logs:";
             this.logBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
             // 
@@ -348,8 +362,8 @@
             // 
             // convertBox
             // 
+            this.convertBox.Controls.Add(this.DeleteQueueBtn);
             this.convertBox.Controls.Add(this.DeleteAllFilesBtn);
-            this.convertBox.Controls.Add(this.StopConversionBtn);
             this.convertBox.Controls.Add(this.idLbl);
             this.convertBox.Controls.Add(this.picturePathLbl);
             this.convertBox.Controls.Add(this.progInfoLbl);
@@ -359,6 +373,7 @@
             this.convertBox.Controls.Add(this.importPicBtn);
             this.convertBox.Controls.Add(this.FindConvertedPicBtn);
             this.convertBox.Controls.Add(this.progBar);
+            this.convertBox.Controls.Add(this.StopConversionBtn);
             this.convertBox.Location = new System.Drawing.Point(17, 21);
             this.convertBox.Name = "convertBox";
             this.convertBox.Size = new System.Drawing.Size(571, 768);
@@ -366,26 +381,14 @@
             this.convertBox.TabStop = false;
             this.convertBox.Text = "Convert Pictures";
             // 
-            // StopConversionBtn
-            // 
-            this.StopConversionBtn.ForeColor = System.Drawing.Color.Firebrick;
-            this.StopConversionBtn.Location = new System.Drawing.Point(13, 576);
-            this.StopConversionBtn.Name = "StopConversionBtn";
-            this.StopConversionBtn.Size = new System.Drawing.Size(265, 57);
-            this.StopConversionBtn.TabIndex = 17;
-            this.StopConversionBtn.Text = "Stop Conversion";
-            this.StopConversionBtn.UseVisualStyleBackColor = true;
-            this.StopConversionBtn.Visible = false;
-            this.StopConversionBtn.Click += new System.EventHandler(this.StopConversionBtn_Click);
-            // 
             // progInfoLbl
             // 
             this.progInfoLbl.AutoSize = true;
             this.progInfoLbl.Location = new System.Drawing.Point(13, 647);
             this.progInfoLbl.Name = "progInfoLbl";
-            this.progInfoLbl.Size = new System.Drawing.Size(98, 25);
+            this.progInfoLbl.Size = new System.Drawing.Size(443, 25);
             this.progInfoLbl.TabIndex = 14;
-            this.progInfoLbl.Text = "Progress";
+            this.progInfoLbl.Text = "Click \'Import Pictures\' then \'Convert Pictures\'.";
             // 
             // pictureListTable
             // 
@@ -410,6 +413,18 @@
             this.overlayConvert.Size = new System.Drawing.Size(171, 25);
             this.overlayConvert.TabIndex = 9;
             this.overlayConvert.Text = "Convert Pictures";
+            // 
+            // StopConversionBtn
+            // 
+            this.StopConversionBtn.ForeColor = System.Drawing.Color.Firebrick;
+            this.StopConversionBtn.Location = new System.Drawing.Point(13, 576);
+            this.StopConversionBtn.Name = "StopConversionBtn";
+            this.StopConversionBtn.Size = new System.Drawing.Size(265, 57);
+            this.StopConversionBtn.TabIndex = 17;
+            this.StopConversionBtn.Text = "Stop Conversion";
+            this.StopConversionBtn.UseVisualStyleBackColor = true;
+            this.StopConversionBtn.Visible = false;
+            this.StopConversionBtn.Click += new System.EventHandler(this.StopConversionBtn_Click);
             // 
             // pictureBox
             // 
@@ -493,6 +508,7 @@
         private System.Windows.Forms.Label picturePathLbl;
         private System.Windows.Forms.Button StopConversionBtn;
         private System.Windows.Forms.Button DeleteAllFilesBtn;
+        private System.Windows.Forms.Button DeleteQueueBtn;
     }
 }
 
