@@ -214,7 +214,7 @@ namespace HDPictureViewerConverter
                 }
                 catch (Exception)
                 {
-                    errors += "\nFAIL: Reason: convimg.yaml was not found and could not be automatically created at the following directory: \n" + AppDir;
+                    errors += "\nFAIL: yaml creation failed. \nReason: convimg.yaml was not found and could not be automatically created at the following directory: \n" + AppDir;
                     Invoke(new Action(() =>
                     {
 
@@ -805,13 +805,14 @@ namespace HDPictureViewerConverter
                         {
                             if (advancedMode.Checked)
                                 Invoke(new Action(() => { logBox.AppendText("\nINFO: convimg timed out.", Color.Gray); }));
+                            if(Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
+                                Invoke(new Action(() => { logBox.AppendText("\nFAIL: "+fileNoExtension+ "\nReason: convimg crash. Try restarting HD Picture Viewer Converter or save the picture as another .png file.", Color.Red); }));
                             break;
                         }
                         else
                         {
                             if (advancedMode.Checked)
                                 Invoke(new Action(() => { logBox.AppendText("\nINFO: convimg still running", Color.Gray); }));
-
                         }
                     }
                 }
@@ -831,8 +832,8 @@ namespace HDPictureViewerConverter
                 Invoke(new Action(() => { logBox.AppendText("\nWARNING: Picture is incredibly large (" + finalSize + " bytes) and will likely not fit on the calculator! Please make the file under 3,000,000 bytes or use the resizing options provided in this application."); }));
             else if (finalSize > 1000000)//1mb
                 Invoke(new Action(() => { logBox.AppendText("\nWARNING: Picture is very large (" + finalSize + " bytes) and you may need to delete files before you send over this image!"); }));
-            else if (finalSize == -1)//error
-                Invoke(new Action(() => { logBox.AppendText("\nWARNING: Could not get final picture size of \n" + fileNoExtension + "\n", Color.Gray); }));
+            else if (finalSize <= 0)//error
+                Invoke(new Action(() => { logBox.AppendText("\nWARNING: Picture size is invalid for " + fileNoExtension, Color.Gray); }));
             else
                 Invoke(new Action(() => { logBox.AppendText("\nINFO: Picture should fit on calculator.", Color.Gray); }));
             Invoke(new Action(() => { logBox.AppendText("\nFINISHED: " + fileNoExtension + "\n", Color.Green); }));
@@ -902,7 +903,6 @@ namespace HDPictureViewerConverter
                     }
                     Directory.CreateDirectory(AppDir + filenamewe);
                 }
-
             }
             catch (Exception ex)
             {
@@ -1089,19 +1089,19 @@ namespace HDPictureViewerConverter
             switch (resizeComboBox.SelectedIndex)
             {
                 case 0:
-                    ResizeDescLabel.Text = "Best quality.\nOriginal Resolution.\nLargest file size.";
+                    ResizeDescLabel.Text = "Resize Details:\nResolution: unlimited.\nFile size: unlimited.";
                     maxCores.Value = Environment.ProcessorCount;
                     break;
                 case 1:
-                    ResizeDescLabel.Text = "Lower quality.\nReduces picture resolution to at most 320x240.\nSmallest file size.";
+                    ResizeDescLabel.Text = "Resize Details:\nResolution: 320x240 maximum.\nFile size: 77 KB maximum.";
                     maxCores.Value = 1;
                     break;
                 case 2:
-                    ResizeDescLabel.Text = "Lower quality.\nForce picture resolution to be exactly 320x240.\nSmall file size.";
+                    ResizeDescLabel.Text = "Resize Details:\nResolution: 320x240 exactly.\nFile size: 77 KB maximum.";
                     maxCores.Value = 1;
                     break;
                 default:
-                    ResizeDescLabel.Text = "Description:";
+                    ResizeDescLabel.Text = "Resize Details:";
                     break;
             }
 
@@ -1183,7 +1183,15 @@ namespace HDPictureViewerConverter
             }
             else
             {
-                progress(0, 1, "Initializing next picture...");
+                
+                if (pictureListTable.Controls.Count == 0)
+                {
+                    progress(0, 1, "No pictures to convert.");
+                }
+                else
+                {
+                    progress(0, 1, "Initializing next picture...");
+                }
                 String picPath = "";
                 String picID = "";
                 int setting = resizeComboBox.SelectedIndex;

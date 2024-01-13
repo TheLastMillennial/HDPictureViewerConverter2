@@ -106,7 +106,7 @@
             this.OptionsGroupBox.Controls.Add(this.resizeComboBox);
             this.OptionsGroupBox.Location = new System.Drawing.Point(594, 21);
             this.OptionsGroupBox.Name = "OptionsGroupBox";
-            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 209);
+            this.OptionsGroupBox.Size = new System.Drawing.Size(571, 192);
             this.OptionsGroupBox.TabIndex = 2;
             this.OptionsGroupBox.TabStop = false;
             this.OptionsGroupBox.Text = "Options";
@@ -114,7 +114,7 @@
             // advancedMode
             // 
             this.advancedMode.AutoSize = true;
-            this.advancedMode.Location = new System.Drawing.Point(12, 163);
+            this.advancedMode.Location = new System.Drawing.Point(12, 148);
             this.advancedMode.Name = "advancedMode";
             this.advancedMode.Size = new System.Drawing.Size(200, 29);
             this.advancedMode.TabIndex = 7;
@@ -125,7 +125,7 @@
             // 
             // maxCores
             // 
-            this.maxCores.Location = new System.Drawing.Point(478, 163);
+            this.maxCores.Location = new System.Drawing.Point(478, 147);
             this.maxCores.Maximum = new decimal(new int[] {
             99999,
             0,
@@ -153,7 +153,7 @@
             // CoresLabel
             // 
             this.CoresLabel.AutoSize = true;
-            this.CoresLabel.Location = new System.Drawing.Point(350, 165);
+            this.CoresLabel.Location = new System.Drawing.Point(350, 149);
             this.CoresLabel.Name = "CoresLabel";
             this.CoresLabel.Size = new System.Drawing.Size(122, 25);
             this.CoresLabel.TabIndex = 14;
@@ -173,20 +173,20 @@
             // ResizeDescLabel
             // 
             this.ResizeDescLabel.AutoSize = true;
-            this.ResizeDescLabel.Location = new System.Drawing.Point(7, 73);
+            this.ResizeDescLabel.Location = new System.Drawing.Point(8, 70);
             this.ResizeDescLabel.Name = "ResizeDescLabel";
-            this.ResizeDescLabel.Size = new System.Drawing.Size(132, 25);
+            this.ResizeDescLabel.Size = new System.Drawing.Size(162, 75);
             this.ResizeDescLabel.TabIndex = 4;
-            this.ResizeDescLabel.Text = "Description: ";
+            this.ResizeDescLabel.Text = "Resize Details: \r\n+\r\n+";
             // 
             // resizeLabel
             // 
             this.resizeLabel.AutoSize = true;
-            this.resizeLabel.Location = new System.Drawing.Point(7, 31);
+            this.resizeLabel.Location = new System.Drawing.Point(7, 34);
             this.resizeLabel.Name = "resizeLabel";
-            this.resizeLabel.Size = new System.Drawing.Size(164, 25);
+            this.resizeLabel.Size = new System.Drawing.Size(162, 25);
             this.resizeLabel.TabIndex = 2;
-            this.resizeLabel.Text = "Resize Options:";
+            this.resizeLabel.Text = "Resize Method:";
             // 
             // resizeComboBox
             // 
@@ -197,10 +197,10 @@
             this.resizeComboBox.Items.AddRange(new object[] {
             "Do not resize image.",
             "Maintain aspect ratio.",
-            "Stretch to fit screen."});
-            this.resizeComboBox.Location = new System.Drawing.Point(177, 31);
+            "Stretch to fit."});
+            this.resizeComboBox.Location = new System.Drawing.Point(176, 31);
             this.resizeComboBox.Name = "resizeComboBox";
-            this.resizeComboBox.Size = new System.Drawing.Size(377, 33);
+            this.resizeComboBox.Size = new System.Drawing.Size(378, 33);
             this.resizeComboBox.TabIndex = 6;
             this.AllToolTip.SetToolTip(this.resizeComboBox, "Which resizing method should the program use?");
             this.resizeComboBox.SelectedIndexChanged += new System.EventHandler(this.resizeComboBox_SelectedIndexChanged);
@@ -215,23 +215,23 @@
             // idLbl
             // 
             this.idLbl.AutoSize = true;
-            this.idLbl.Location = new System.Drawing.Point(446, 110);
+            this.idLbl.Location = new System.Drawing.Point(433, 110);
             this.idLbl.Name = "idLbl";
             this.idLbl.Size = new System.Drawing.Size(32, 25);
             this.idLbl.TabIndex = 16;
             this.idLbl.Text = "ID";
             this.AllToolTip.SetToolTip(this.idLbl, "Randomly assigned ID for the picture. \r\nPictures with the same ID will overwrite " +
-        "eachother.\r\nFist character must be a letter.\r\nSecond character can be either a l" +
-        "etter or number.");
+        "eachother.\r\nFirst character must be a letter.\r\nSecond character can be either a " +
+        "letter or number.");
             // 
             // picturePathLbl
             // 
             this.picturePathLbl.AutoSize = true;
-            this.picturePathLbl.Location = new System.Drawing.Point(18, 110);
+            this.picturePathLbl.Location = new System.Drawing.Point(13, 110);
             this.picturePathLbl.Name = "picturePathLbl";
-            this.picturePathLbl.Size = new System.Drawing.Size(129, 25);
+            this.picturePathLbl.Size = new System.Drawing.Size(170, 25);
             this.picturePathLbl.TabIndex = 15;
-            this.picturePathLbl.Text = "Picture Path";
+            this.picturePathLbl.Text = "Picture File Path";
             this.AllToolTip.SetToolTip(this.picturePathLbl, "The images that were selected.\r\n");
             // 
             // convertPicBtn
@@ -291,9 +291,9 @@
             this.infoBox.Controls.Add(this.squaresLbl);
             this.infoBox.Controls.Add(this.newDimensionsLbl);
             this.infoBox.Controls.Add(this.origDimensionsLbl);
-            this.infoBox.Location = new System.Drawing.Point(594, 236);
+            this.infoBox.Location = new System.Drawing.Point(594, 219);
             this.infoBox.Name = "infoBox";
-            this.infoBox.Size = new System.Drawing.Size(572, 553);
+            this.infoBox.Size = new System.Drawing.Size(572, 570);
             this.infoBox.TabIndex = 9;
             this.infoBox.TabStop = false;
             this.infoBox.Text = "Advanced Information";
@@ -316,7 +316,7 @@
             this.logBox.Name = "logBox";
             this.logBox.ReadOnly = true;
             this.logBox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.logBox.Size = new System.Drawing.Size(541, 430);
+            this.logBox.Size = new System.Drawing.Size(541, 446);
             this.logBox.TabIndex = 9;
             this.logBox.Text = "Logs:";
             this.logBox.TextChanged += new System.EventHandler(this.errorsTxtBox_TextChanged);
@@ -324,7 +324,7 @@
             // squaresLbl
             // 
             this.squaresLbl.AutoSize = true;
-            this.squaresLbl.Location = new System.Drawing.Point(17, 512);
+            this.squaresLbl.Location = new System.Drawing.Point(17, 535);
             this.squaresLbl.Name = "squaresLbl";
             this.squaresLbl.Size = new System.Drawing.Size(154, 25);
             this.squaresLbl.TabIndex = 2;
@@ -334,7 +334,7 @@
             // newDimensionsLbl
             // 
             this.newDimensionsLbl.AutoSize = true;
-            this.newDimensionsLbl.Location = new System.Drawing.Point(17, 487);
+            this.newDimensionsLbl.Location = new System.Drawing.Point(17, 510);
             this.newDimensionsLbl.Name = "newDimensionsLbl";
             this.newDimensionsLbl.Size = new System.Drawing.Size(178, 25);
             this.newDimensionsLbl.TabIndex = 1;
@@ -344,7 +344,7 @@
             // origDimensionsLbl
             // 
             this.origDimensionsLbl.AutoSize = true;
-            this.origDimensionsLbl.Location = new System.Drawing.Point(17, 462);
+            this.origDimensionsLbl.Location = new System.Drawing.Point(17, 485);
             this.origDimensionsLbl.Name = "origDimensionsLbl";
             this.origDimensionsLbl.Size = new System.Drawing.Size(216, 25);
             this.origDimensionsLbl.TabIndex = 0;
@@ -393,6 +393,7 @@
             // pictureListTable
             // 
             this.pictureListTable.AutoScroll = true;
+            this.pictureListTable.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Inset;
             this.pictureListTable.ColumnCount = 2;
             this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.77778F));
             this.pictureListTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
@@ -401,7 +402,7 @@
             this.pictureListTable.Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
             this.pictureListTable.RowCount = 1;
             this.pictureListTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.pictureListTable.Size = new System.Drawing.Size(545, 422);
+            this.pictureListTable.Size = new System.Drawing.Size(552, 422);
             this.pictureListTable.TabIndex = 13;
             this.pictureListTable.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureListTable_Paint);
             // 
