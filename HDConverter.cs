@@ -254,93 +254,97 @@ namespace HDPictureViewerConverter
             }));
 
             //Sets progress bar
-            Invoke(new Action(() =>
-            {
-                progress(0, 2, "Initial Image Loading");
-
-            }));
+            Invoke(new Action(() => {progress(0, 2, "Initial Image Loading");}));
 
             try
             {
-                img = Image.FromFile(file);
+                using (img = Image.FromFile(file))
+                {
+                    using (imgForPalette = Image.FromFile(file))
+                    {
+                        //imgForPalette = Image.FromFile(file);
+
+                        filename = Path.GetFileName(file);
+                        fileNoExtension = Path.GetFileNameWithoutExtension(file);
+                        fileExtension = Path.GetExtension(file);
+
+                        Invoke(new Action(() => { logBox.AppendText("\nINFO: Starting conversion of " + filename); }));
+
+                        //if a file currently exists, just delete it
+                        if (File.Exists(AppDir + filename))
+                            File.Delete(AppDir + filename);
+
+
+                        if (file.Contains(' ') || char.IsDigit(filename[0]))
+                        {
+                            validFilename = false;
+                            try
+                            {
+                                //copy filename to then make it valid
+                                string renamedFile = "";
+                                //get only alphanumeric chars from string
+                                foreach (char c in fileNoExtension)
+                                {
+                                    if (char.IsLetterOrDigit(c))
+                                    {
+                                        renamedFile += c;
+                                    }
+                                }
+
+                                //first character must be a letter.
+                                if (char.IsDigit(renamedFile[0]))
+                                {
+                                    //Z will ensure image shows up at the bottom of calculator's memory management screen and out of the way of more important appvars
+                                    renamedFile = "Z" + renamedFile;
+                                }
+
+                                //if a file with same name already exists,  just delete it
+                                if (File.Exists(AppDir + renamedFile + fileExtension))
+                                    File.Delete(AppDir + renamedFile + fileExtension);
+
+                                //makes new image with the new name with the extension tacked on.
+                                File.Copy(file, renamedFile + fileExtension);
+
+                                //overwrite outdated variables
+                                //img = Image.FromFile(renamedFile+filenamee);                       
+                                filename = renamedFile + fileExtension;
+                                fileNoExtension = renamedFile;
+
+                            }
+                            catch (Exception)
+                            {
+                                errors += "\nFAIL: \"" + filename + "\"\nReason: Invalid file name. The converter attempted to create a renamed copy but failed. Your image file name must NOT contain whitespace (Use underscores instead). Your image file name should also start with a letter. Please rename this file and try again!";
+                                Invoke(new Action(() => { logBox.AppendText(errors, Color.Red); }));
+                                //skips rest of conversion for this loop
+                                return;
+                            }
+                        }
+
+                        //Checks if the file is a png. If it's not, convert it to png
+                        if (!fileExtension.Equals(".png"))
+                        {
+                            using (MemoryStream ms = new MemoryStream())
+                            {
+                                img.Save(ms, ImageFormat.Png);
+                                ms.Flush();
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception e)
             {
                 Invoke(new Action(() => { logBox.AppendText("\nFAIL: " + file + "\nReason: Invalid file.", Color.Red); }));
                 return;
             }
-            imgForPalette = Image.FromFile(file);
-
-            filename = Path.GetFileName(file);
-            fileNoExtension = Path.GetFileNameWithoutExtension(file);
-            fileExtension = Path.GetExtension(file);
-
-            Invoke(new Action(() => { logBox.AppendText("\nINFO: Starting conversion of " + filename); }));
-
-            //if a file currently exists, just delete it
-            if (File.Exists(AppDir + filename))
-                File.Delete(AppDir + filename);
-
-
-            if (file.Contains(' ') || char.IsDigit(filename[0]))
-            {
-                validFilename = false;
-                try
-                {
-                    //copy filename to then make it valid
-                    string renamedFile = "";
-                    //get only alphanumeric chars from string
-                    foreach (char c in fileNoExtension)
-                    {
-                        if (char.IsLetterOrDigit(c))
-                        {
-                            renamedFile += c;
-                        }
-                    }
-
-                    //first character must be a letter.
-                    if (char.IsDigit(renamedFile[0]))
-                    {
-                        //Z will ensure image shows up at the bottom of calculator's memory management screen and out of the way of more important appvars
-                        renamedFile = "Z" + renamedFile;
-                    }
-
-                    //if a file with same name already exists,  just delete it
-                    if (File.Exists(AppDir + renamedFile + fileExtension))
-                        File.Delete(AppDir + renamedFile + fileExtension);
-
-                    //makes new image with the new name with the extension tacked on.
-                    File.Copy(file, renamedFile + fileExtension);
-
-                    //overwrite outdated variables
-                    //img = Image.FromFile(renamedFile+filenamee);                       
-                    filename = renamedFile + fileExtension;
-                    fileNoExtension = renamedFile;
-
-                }
-                catch (Exception)
-                {
-                    errors += "\nFAIL: \"" + filename + "\"\nReason: Invalid file name. The converter attempted to create a renamed copy but failed. Your image file name must NOT contain whitespace (Use underscores instead). Your image file name should also start with a letter. Please rename this file and try again!";
-                    Invoke(new Action(() => { logBox.AppendText(errors, Color.Red); }));
-                    //skips rest of conversion for this loop
-                    return;
-                }
-            }
-
-            //Checks if the file is a png. If it's not, convert it to png
-            if (!fileExtension.Equals(".png"))
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    img.Save(ms, ImageFormat.Png);
-                    ms.Flush();
-                }
-            }
+            
+            
 
             if (advancedMode.Checked && !validFilename)
                 Invoke(new Action(() => { logBox.AppendText("\nINFO: The file name was not valid or the file was not already a PNG. A corrected copy of the image will be made. The copy will be deleted when the program finishes (the original image will not be modified or deleted).", Color.Gray); }));
             if (haltCalled())
                 return;
+
             //if the file name is valid and it was already a PNG, then there no local copy of the image was made. 
             // since there was no local copy made, just directly access the image from the file location the user gave us.
             // note: file is the file path the user provided. filename is the local copy.
@@ -805,9 +809,11 @@ namespace HDPictureViewerConverter
                         {
                             if (advancedMode.Checked)
                                 Invoke(new Action(() => { logBox.AppendText("\nINFO: convimg timed out.", Color.Gray); }));
-                            if(Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
-                                Invoke(new Action(() => { logBox.AppendText("\nFAIL: "+fileNoExtension+ "\nReason: convimg crash. Try restarting HD Picture Viewer Converter or save the picture as another .png file.", Color.Red); }));
-                            break;
+                            if (Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
+                            {
+                                Invoke(new Action(() => { logBox.AppendText("\nFAIL: " + fileNoExtension + "\nReason: convimg crash. Try restarting HD Picture Viewer Converter or save the picture as another .png file.", Color.Red); }));
+                                return;
+                            }
                         }
                         else
                         {
@@ -1211,7 +1217,10 @@ namespace HDPictureViewerConverter
                         picPath = "";
                         picID = "";
                     }
+                    subPicBox.Dispose();
+                    pictureBox.Dispose();
                 }
+                
                 deleteQueue();
                 
             }

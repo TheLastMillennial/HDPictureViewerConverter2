@@ -296,7 +296,7 @@
             this.infoBox.Size = new System.Drawing.Size(572, 570);
             this.infoBox.TabIndex = 9;
             this.infoBox.TabStop = false;
-            this.infoBox.Text = "Advanced Information";
+            this.infoBox.Text = "Information";
             // 
             // label3
             // 
