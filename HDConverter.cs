@@ -143,7 +143,7 @@ namespace HDPictureViewerConverter
                     inputBox.Width = (int)Math.Round(pictureListTable.Width * .2);
                     inputBox.MaxLength = 2;
                     inputBox.TabStop = true;
-                    inputBox.TabIndex= tabIndex++;
+                    inputBox.TabIndex = tabIndex++;
 
                     string randID = ((char)('A' + random.Next(26))).ToString();
                     if (random.Next(36) < 10)//check whether to choose a random number or letter
@@ -247,14 +247,14 @@ namespace HDPictureViewerConverter
             //gets current dir of this program
             String AppDir = AppDomain.CurrentDomain.BaseDirectory;
 
-            //sets errors box colors to nominal
+            //sets errors box colors to nominal 
             Invoke(new Action(() =>
             {
                 logBox.ForeColor = System.Drawing.Color.Gray;
             }));
 
             //Sets progress bar
-            Invoke(new Action(() => {progress(0, 2, "Initial Image Loading");}));
+            Invoke(new Action(() => { progress(0, 2, "Initial Image Loading"); }));
 
             try
             {
@@ -337,8 +337,8 @@ namespace HDPictureViewerConverter
                 Invoke(new Action(() => { logBox.AppendText("\nFAIL: " + file + "\nReason: Invalid file.", Color.Red); }));
                 return;
             }
-            
-            
+
+
 
             if (advancedMode.Checked && !validFilename)
                 Invoke(new Action(() => { logBox.AppendText("\nINFO: The file name was not valid or the file was not already a PNG. A corrected copy of the image will be made. The copy will be deleted when the program finishes (the original image will not be modified or deleted).", Color.Gray); }));
@@ -384,7 +384,10 @@ namespace HDPictureViewerConverter
                     }));
                     /* resize the image to reasonable size for the palette */
                     //convimg cannot handle anything larger than 2896
-                    imgForPalette = resizeMaintainAspectRatio(img, 2800, 2800);
+                    if (img.Width > 2800 || img.Height > 2800)
+                        imgForPalette = resizeMaintainAspectRatio(img, 2800, 2800);
+                    else
+                        imgForPalette = img;
 
                     if (imgForPalette == null)
                     {
@@ -790,7 +793,7 @@ namespace HDPictureViewerConverter
                     while (Directory.GetFiles(AppDir, "*.8xv").Length < totalSquares)
                     {
                         if (haltCalled())
-                        { cleanupFiles(AppDir, fileExtension, fileNoExtension);return; }
+                        { cleanupFiles(AppDir, fileExtension, fileNoExtension); return; }
                         Thread.Sleep(250);
                         Invoke(new Action(() =>
                         {
@@ -1180,7 +1183,7 @@ namespace HDPictureViewerConverter
 
             convertPicBtn.Visible = false;
 
-            
+
 
             Process[] pname = Process.GetProcessesByName("convimg");
             if (pname.Length != 0)
@@ -1189,7 +1192,7 @@ namespace HDPictureViewerConverter
             }
             else
             {
-                
+
                 if (pictureListTable.Controls.Count == 0)
                 {
                     progress(0, 1, "No pictures to convert.");
@@ -1207,7 +1210,7 @@ namespace HDPictureViewerConverter
                     if (tb.ReadOnly == true)
                     {
                         picPath = tb.Text;
-                        
+
                     }
                     else
                     {
@@ -1220,9 +1223,9 @@ namespace HDPictureViewerConverter
                     subPicBox.Dispose();
                     pictureBox.Dispose();
                 }
-                
+
                 deleteQueue();
-                
+
             }
             //done converting, enable necessary buttons
             StopConversionBtn.Visible = false;
@@ -1252,9 +1255,9 @@ namespace HDPictureViewerConverter
             string AppDir = AppDomain.CurrentDomain.BaseDirectory;
             if (MessageBox.Show("Delete ALL of the following file types at the following directory?\nThis cannnot be undone." +
                 "\n\nFile types:\n .png .8xv .yaml .lst" +
-                "\n\nDirectory:\n" + AppDir, "Delete Files?", MessageBoxButtons.YesNo) == DialogResult.Yes) 
+                "\n\nDirectory:\n" + AppDir, "Delete Files?", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                logBox.AppendText("\nINFO: User selected to delete all files." , Color.Gray);
+                logBox.AppendText("\nINFO: User selected to delete all files.", Color.Gray);
                 string[] findFiles;
                 //files to delete go in this list. ALL files in the current directory with these extensions will be deleted.
                 string[] fileExtensions = { ".png", ".yaml", ".lst", ".8xv" };
@@ -1275,7 +1278,7 @@ namespace HDPictureViewerConverter
                     }
                     catch (Exception ex)
                     {
-                        logBox.AppendText("\nWARNING: An error occured while deleting files: \n " + ex.ToString(), Color.Red); 
+                        logBox.AppendText("\nWARNING: An error occured while deleting files: \n " + ex.ToString(), Color.Red);
                     }
                 }
                 logBox.AppendText("\nINFO: Finished deleting all files.", Color.Green);
@@ -1285,7 +1288,7 @@ namespace HDPictureViewerConverter
             {
                 return;
             }
-            
+
         }
 
         private void DeleteQueueBtn_Click(object sender, EventArgs e)
