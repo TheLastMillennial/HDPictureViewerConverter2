@@ -491,7 +491,7 @@ namespace HDPictureViewerConverter4
             // name of image truncated/padded to 8 chars
             string filename8 = settings.ImageName.Length >= 8 ? settings.ImageName.Substring(0, 8) : settings.ImageName.PadRight(8, ' ');
 
-
+            
             if (!bIsPicture16BPP)
             {
                 // 1,2,4, & 8 BPP use palettes
@@ -592,14 +592,14 @@ namespace HDPictureViewerConverter4
                     string strHorizVertSquares = filename.Substring(2, 6);// gets 000003
 
                     yamlConverts += (
-                    "\n  - name: " + filename +
-                    "\n    style: direct" +
-                    "\n    color-format: rgb565" +
-                    "\n    flip-x: true" +
-                    "\n    rotate: 90" +
-                    "\n    images:" +
-                    "\n      - " + saveName +
-                    "\n    compress: zx0");
+                        "\n  - name: " + filename +
+                        "\n    style: direct" +
+                        "\n    color-format: rgb565" +
+                        "\n    flip-x: true" +
+                        "\n    rotate: 90" +
+                        "\n    images:" +
+                        "\n      - " + saveName +
+                        "\n    compress: zx0");
 
                     yamlOutputsImg += (
                         "\n  - type: appvar" +
@@ -614,7 +614,7 @@ namespace HDPictureViewerConverter4
                     strVersion = "B";
                 }
             }
-
+            //todo: fix outputspal not working
             //Combine all YAML sections and write to convimg.yaml
             yamlLinesList = yamlPalettes + (yamlConverts) + (yamlOutputsImg) + (yamlOutputsPal);
             File.WriteAllText("convimg.yaml", yamlLinesList);

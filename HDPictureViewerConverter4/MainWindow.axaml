@@ -78,11 +78,11 @@
 
                 <TextBlock Text="Number of Colors:"/> 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <RadioButton x:Name="Colors2" Content="2" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors2" Content="2" GroupName="ColorGroup" IsEnabled="False"/>
                   <RadioButton x:Name="Colors4" Content="4" GroupName="ColorGroup" />
                   <RadioButton x:Name="Colors16" Content="16" GroupName="ColorGroup" />
                   <RadioButton x:Name="Colors256" Content="256" GroupName="ColorGroup" IsChecked="True" />
-                  <RadioButton x:Name="Colors65536" Content="65536" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors65536" Content="65,536" GroupName="ColorGroup" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
