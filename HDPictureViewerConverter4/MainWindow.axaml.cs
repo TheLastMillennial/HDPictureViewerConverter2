@@ -491,7 +491,7 @@ namespace HDPictureViewerConverter4
             // name of image truncated/padded to 8 chars
             string filename8 = settings.ImageName.Length >= 8 ? settings.ImageName.Substring(0, 8) : settings.ImageName.PadRight(8, ' ');
 
-            
+
             if (!bIsPicture16BPP)
             {
                 // 1,2,4, & 8 BPP use palettes
@@ -562,8 +562,6 @@ namespace HDPictureViewerConverter4
             }
             else
             {
-                //16 bpp
-
                 //16 bpp palette appvar only used for metadata
                 yamlOutputsPal += ("\n  - type: appvar" +
                                 "\n    name: HP" + nameID + "0000" + //0000 used as placeholders, they don't signify anything
@@ -605,7 +603,14 @@ namespace HDPictureViewerConverter4
                         "\n  - type: appvar" +
                         "\n    name: " + filename +
                         "\n    source-format: c" +
-                        "\n    header-string: " + " HDPIC16" + strVersion + filename8 + nameID + strHorizVertSquares + // e.g. HDPIC16 A PuppySma 004003
+                        /* e.g. HDPIC16 A PuppySma PS 004003
+                            picture version: HDPIC16
+                            IsFirstImage? A = true, B = false
+                            Image name: PuppySma
+                            Image ID: PS
+                            Max size in squares: 004003
+                        */
+                        "\n    header-string: " + " HDPIC16" + strVersion + filename8 + nameID + strHorizVertSquares +
                         "\n    archived: true" +
                         "\n    converts:" +
                         "\n      - " + filename);
@@ -623,8 +628,8 @@ namespace HDPictureViewerConverter4
             // Start convimg process based on OS
             LaunchConvimg();
 
-            //Verify expected number of .8xv files created
-            if (Directory.GetFiles(Directory.GetCurrentDirectory(), "*.8xv").Length < savedFiles.Count)
+            //Verify expected number of .8xv files created. 16bpp doesn't export a palette
+            if (Directory.GetFiles(Directory.GetCurrentDirectory(), "*.8xv").Length < (bIsPicture16BPP ? savedFiles.Count - 1 : savedFiles.Count))
             {
                 IOException e = new IOException("Convimg crash. Try restarting HD Picture Viewer Converter or save the picture as a separate .png file.");
                 throw e;
