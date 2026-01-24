@@ -29,6 +29,14 @@ namespace HDPictureViewerConverter4
 
             // Use ItemsSource instead of assigning to read-only Items
             QueueItemsControl.ItemsSource = _queue;
+
+            // Init working directory
+            if (!Directory.GetCurrentDirectory().Contains("working"))
+            {
+                Directory.CreateDirectory("./working");
+                Directory.SetCurrentDirectory("./working");
+            }
+
         }
 
         private async void AddPictureButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -54,6 +62,52 @@ namespace HDPictureViewerConverter4
                 _queue.Remove(qi);
             }
         }
+
+        // New handler: opens a file explorer at the current working directory (cross-platform)
+        private void FindConvertedButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var dir = Path.GetFullPath(Directory.GetCurrentDirectory());
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // explorer accepts a directory path as argument
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer",
+                        Arguments = $"\"{dir}\"",
+                        UseShellExecute = true
+                    });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "open",
+                        Arguments = dir,
+                        UseShellExecute = false
+                    });
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "xdg-open",
+                        Arguments = dir,
+                        UseShellExecute = false
+                    });
+                }
+                else
+                {
+                    AppendLog("Unsupported OS platform for opening explorer.");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Failed to open explorer for '{dir}': {ex.Message}");
+            }
+        }
+
 
         private async void StartConversionButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
@@ -86,12 +140,6 @@ namespace HDPictureViewerConverter4
             AppendLog($"Starting processing: {item.FileName} (ID={item.ID})");
             ImageProgressBar.Value = 0;
 
-            if (!Directory.GetCurrentDirectory().Contains("working"))
-            {
-                Directory.CreateDirectory("./working");
-                Directory.SetCurrentDirectory("./working");
-            }
-
             var ext = Path.GetExtension(item.FilePath).ToLowerInvariant();
             var createdFiles = new System.Collections.Generic.List<string>();
 
@@ -118,12 +166,13 @@ namespace HDPictureViewerConverter4
                 });
 
                 // call background work without touching UI inside it
+                List<(string, int)> framesData = new List<(string, int)>();
                 await Task.Run(async () =>
                 {
                     if (ext == ".gif")
                     {
                         // ProcessGifAsync now returns a list of (path, delayMs) tuples
-                        var framesData = await ProcessGifAsync(item, createdFiles, settings.ChromaBits);
+                        framesData = await ProcessGifAsync(item, createdFiles, settings.ChromaBits);
                         await convertGif(framesData, item.ID, settings);
                     }
                     else
@@ -135,9 +184,10 @@ namespace HDPictureViewerConverter4
 
                 AppendLog($"Conversion completed for {item.FileName} ({item.ID}), organizing output...");
 
-                // move .8xv files to folder named after original image in same directory
+                // move .8xv files to folder named after original image in same directory, overwrite existing folders
                 var dir = Directory.GetCurrentDirectory();
                 var destDir = Path.Combine(dir, Path.GetFileNameWithoutExtension(item.FilePath));
+                try { Directory.Delete(destDir, true); } catch { }
                 Directory.CreateDirectory(destDir);
                 foreach (var f in Directory.GetFiles(dir, "*.8xv"))
                 {
@@ -145,7 +195,11 @@ namespace HDPictureViewerConverter4
                     try { File.Move(f, dest, overwrite: true); } catch { }
                 }
 
-                // delete created files and .yaml, .lst, .c in dir
+                // delete created files and .yaml, .lst, .c, .h in dir
+                foreach (var f in framesData)
+                {
+                    try { File.Delete(f.Item1); } catch { }
+                }
                 foreach (var f in createdFiles)
                 {
                     try { File.Delete(f); } catch { }
@@ -153,6 +207,8 @@ namespace HDPictureViewerConverter4
                 foreach (var f in Directory.GetFiles(dir, "*.yaml")) try { File.Delete(f); } catch { }
                 foreach (var f in Directory.GetFiles(dir, "*.lst")) try { File.Delete(f); } catch { }
                 foreach (var f in Directory.GetFiles(dir, "*.c")) try { File.Delete(f); } catch { }
+                foreach (var f in Directory.GetFiles(dir, "*.h")) try { File.Delete(f); } catch { }
+
 
                 AppendLog($"Successfully processed {item.FileName}");
             }
@@ -166,9 +222,9 @@ namespace HDPictureViewerConverter4
             }
         }
 
-        private async Task<System.Collections.Generic.List<string>> ProcessImageAsync(QueueItem item, System.Collections.Generic.List<string> createdFiles, ImageProcessingSettings settings)
+        private async Task<List<string>> ProcessImageAsync(QueueItem item, List<string> createdFiles, ImageProcessingSettings settings)
         {
-            var results = new System.Collections.Generic.List<string>();
+            var results = new List<string>();
             using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(item.FilePath);
 
             // Resize options
@@ -281,7 +337,7 @@ namespace HDPictureViewerConverter4
         }
 
         // Return list of (filePath, delayMs) so convertGif can know each frame's duration
-        private async Task<System.Collections.Generic.List<(string Path, int DelayMs)>> ProcessGifAsync(QueueItem item, System.Collections.Generic.List<string> createdFiles, int chromaBits)
+        private async Task<List<(string Path, int DelayMs)>> ProcessGifAsync(QueueItem item, List<string> createdFiles, int chromaBits)
         {
             var results = new System.Collections.Generic.List<(string Path, int DelayMs)>();
             using var gif = SixLabors.ImageSharp.Image.Load<Rgba32>(item.FilePath);
@@ -323,6 +379,7 @@ namespace HDPictureViewerConverter4
             // Apply axis-aligned quantization controlled by chromaBits slider
             AppendLog($"Applying axis-aligned quantization: {chromaBits} bits per channel (levels={1 << chromaBits})");
 
+            //todo: compare each pixel to the previous non magenta pixel
             // Replace unchanged pixels with magenta (255,0,255) and save each frame
             SixLabors.ImageSharp.Image<Rgba32>? prev = null;
             var outDirectory = Directory.GetCurrentDirectory();
@@ -601,7 +658,7 @@ namespace HDPictureViewerConverter4
             }
 
 
-                foreach (var frame in framesData)
+            foreach (var frame in framesData)
             {
                 // skip palette image entry when generating per-frame converts/outputs
                 if (Path.GetFileName(frame.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase))
@@ -664,7 +721,7 @@ namespace HDPictureViewerConverter4
             // Log per-frame delays for visibility
             foreach (var f in framesData)
             {
-                if (Path.GetFileName(f.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase)) 
+                if (Path.GetFileName(f.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase))
                     continue;
                 AppendLog($"Frame {Path.GetFileName(f.Path)} delay = {f.DelayMs} ms");
             }

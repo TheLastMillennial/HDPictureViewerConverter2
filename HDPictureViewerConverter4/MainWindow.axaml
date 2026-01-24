@@ -7,8 +7,26 @@
         Title="HDPictureViewerConverter4">
   <DockPanel Margin="8">
     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="8">
-      <Button x:Name="AddPictureButton" Content="Add Picture" Width="120" Click="AddPictureButton_Click" />
-      <Button x:Name="StartConversionButton" Content="Start Conversion" Width="140" Click="StartConversionButton_Click" />
+      <Button x:Name="AddPictureButton" Width="120" Click="AddPictureButton_Click">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Data="M6,0 L10,0 L10,6 L16,6 L16,10 L10,10 L10,16 L6,16 L6,10 L0,10 L0,6 L6,6 Z" Fill="Black" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Add Picture" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
+
+      <Button x:Name="StartConversionButton" Width="160" Click="StartConversionButton_Click">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Data="M4,2 L14,8 L4,14 Z" Fill="Black" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Start Conversion" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
+
+      <Button x:Name="FindConvertedButton" Width="200" Click="FindConvertedButton_Click">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Data="M2,2 L14,2 L14,14 L2,14 Z M4,8 L12,8 M8,4 L8,12" Fill="Black" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Find Converted Pictures" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
     </StackPanel>
 
     <Grid DockPanel.Dock="Top" Margin="0,8,0,8">
@@ -72,12 +90,6 @@
                   <Slider x:Name="DitherSlider" Minimum="0" Maximum="1" Value="0.8" Width="200" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="8,0,0,0" />
                   <TextBlock Text="{Binding Value, ElementName=DitherSlider, StringFormat='{}{0:F1}'}" VerticalAlignment="Center" Margin="8,0,0,0" />
                 </StackPanel>
-
-                <TextBlock Text="Progress:" />
-                <ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
-
-                <TextBlock Text="Log:" />
-                <TextBox x:Name="ImageLog" AcceptsReturn="True" Height="150" IsReadOnly="True"/>
               </StackPanel>
             </TabItem>
 
@@ -92,8 +104,22 @@
               </StackPanel>
             </TabItem>
           </TabControl>
+			<Separator></Separator>
+			
+			<StackPanel Margin="8" Spacing="8">
+				<TextBlock Text="Progress:" />
+				<ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
+
+				<TextBlock Text="Log:" />
+				<TextBox x:Name="ImageLog" AcceptsReturn="True" Height="150" IsReadOnly="True"/>
+			</StackPanel>
         </StackPanel>
+		  
       </Border>
+
+		
+
+		
     </Grid>
 
   </DockPanel>
