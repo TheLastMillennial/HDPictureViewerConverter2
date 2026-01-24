@@ -1,0 +1,100 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="HDPictureViewerConverter4.MainWindow"
+        Title="HDPictureViewerConverter4">
+  <DockPanel Margin="8">
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="8">
+      <Button x:Name="AddPictureButton" Content="Add Picture" Width="120" Click="AddPictureButton_Click" />
+      <Button x:Name="StartConversionButton" Content="Start Conversion" Width="140" Click="StartConversionButton_Click" />
+    </StackPanel>
+
+    <Grid DockPanel.Dock="Top" Margin="0,8,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2*" />
+        <ColumnDefinition Width="3*" />
+      </Grid.ColumnDefinitions>
+
+      <!-- Queue -->
+      <Border Grid.Column="0" Margin="0,0,8,0" BorderBrush="Gray" BorderThickness="1" Padding="6">
+        <StackPanel>
+          <TextBlock Text="Queue" FontWeight="Bold" Margin="0,0,0,6" />
+          <ScrollViewer>
+            <ItemsControl x:Name="QueueItemsControl">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border BorderBrush="Gray" BorderThickness="1" Padding="6" Margin="4">
+                    <DockPanel>
+                      <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                        <TextBlock Text="{Binding FileName}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                          <TextBlock Text="ID:" VerticalAlignment="Center"/> 
+                          <TextBox Width="60" MaxLength="2" Text="{Binding ID, Mode=TwoWay}" HorizontalAlignment="Left" Margin="6,0,0,0" />
+                          <Button Content="Remove" Click="RemoveQueueItem_Click" Margin="8,0,0,0"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </StackPanel>
+      </Border>
+
+      <!-- Settings -->
+      <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Padding="6">
+        <StackPanel>
+          <TextBlock Text="Settings" FontWeight="Bold" Margin="0,0,0,6" />
+          <TabControl>
+            <TabItem Header="Image Settings">
+              <StackPanel Margin="8" Spacing="8">
+                <TextBlock Text="Resize:"/> 
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <RadioButton x:Name="ResizeDoNot" Content="Do Not Resize" GroupName="ResizeGroup" />
+                  <RadioButton x:Name="ResizeMaintain" Content="Maintain Aspect Ratio" GroupName="ResizeGroup"  IsChecked="True"/>
+                  <RadioButton x:Name="ResizeStretch" Content="Stretch to fit" GroupName="ResizeGroup" />
+                </StackPanel>
+
+                <TextBlock Text="Number of Colors:"/> 
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <RadioButton x:Name="Colors2" Content="2" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors4" Content="4" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors16" Content="16" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors256" Content="256" GroupName="ColorGroup" IsChecked="True" />
+                  <RadioButton x:Name="Colors65536" Content="65536" GroupName="ColorGroup" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="Dither Level:" VerticalAlignment="Center" />
+                  <Slider x:Name="DitherSlider" Minimum="0" Maximum="1" Value="0.8" Width="200" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="8,0,0,0" />
+                  <TextBlock Text="{Binding Value, ElementName=DitherSlider, StringFormat='{}{0:F1}'}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+
+                <TextBlock Text="Progress:" />
+                <ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
+
+                <TextBlock Text="Log:" />
+                <TextBox x:Name="ImageLog" AcceptsReturn="True" Height="150" IsReadOnly="True"/>
+              </StackPanel>
+            </TabItem>
+
+            <TabItem Header="GIF Settings">
+              <StackPanel Margin="8" Spacing="8">
+                <TextBlock Text="Color Bucket Slider (axis-aligned buckets):" />
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                  <Slider x:Name="ChromaSlider" Minimum="1" Maximum="8" Value="4" TickFrequency="1" IsSnapToTickEnabled="True" Width="240" />
+                  <TextBlock Text="{Binding Value, ElementName=ChromaSlider, StringFormat='Bits per channel: {0}'}" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="This slider groups nearby colors into axis-aligned buckets (2^bits levels per channel)." TextWrapping="Wrap" />
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+        </StackPanel>
+      </Border>
+    </Grid>
+
+  </DockPanel>
+</Window>
