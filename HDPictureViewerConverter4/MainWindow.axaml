@@ -29,7 +29,7 @@
       </Button>
     </StackPanel>
 
-    <Grid DockPanel.Dock="Top" Margin="0,8,0,8">
+    <Grid Margin="0,8,0,8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="2*" />
         <ColumnDefinition Width="3*" />
@@ -37,9 +37,15 @@
 
       <!-- Queue -->
       <Border Grid.Column="0" Margin="0,0,8,0" BorderBrush="Gray" BorderThickness="1" Padding="6">
-        <StackPanel>
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
           <TextBlock Text="Queue" FontWeight="Bold" Margin="0,0,0,6" />
-          <ScrollViewer>
+
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl x:Name="QueueItemsControl">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -59,7 +65,7 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </ScrollViewer>
-        </StackPanel>
+        </Grid>
       </Border>
 
       <!-- Settings -->
@@ -71,23 +77,23 @@
               <StackPanel Margin="8" Spacing="8">
                 <TextBlock Text="Resize:"/> 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <RadioButton x:Name="ResizeDoNot" Content="Do Not Resize" GroupName="ResizeGroup" />
-                  <RadioButton x:Name="ResizeMaintain" Content="Maintain Aspect Ratio" GroupName="ResizeGroup"  IsChecked="True"/>
-                  <RadioButton x:Name="ResizeStretch" Content="Stretch to fit" GroupName="ResizeGroup" />
+                  <RadioButton x:Name="ResizeDoNot" Content="Do Not Resize" GroupName="ResizeGroup" ToolTip.Tip="Keep image dimensions. Image may be too big to fit on the calculator!"/>
+                  <RadioButton x:Name="ResizeMaintain" Content="Maintain Aspect Ratio" GroupName="ResizeGroup"  IsChecked="True" ToolTip.Tip="Resize image dimensions to be at most 320x240."/>
+                  <RadioButton x:Name="ResizeStretch" Content="Stretch to fit" GroupName="ResizeGroup" ToolTip.Tip ="Reisze image dimensions to be exactly 320x240." />
                 </StackPanel>
 
-                <TextBlock Text="Number of Colors:"/> 
+                <TextBlock Text="Color Bit Level:"/> 
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                  <RadioButton x:Name="Colors2" Content="2" GroupName="ColorGroup" IsEnabled="False"/>
-                  <RadioButton x:Name="Colors4" Content="4" GroupName="ColorGroup" />
-                  <RadioButton x:Name="Colors16" Content="16" GroupName="ColorGroup" />
-                  <RadioButton x:Name="Colors256" Content="256" GroupName="ColorGroup" IsChecked="True" />
-                  <RadioButton x:Name="Colors65536" Content="65,536" GroupName="ColorGroup" />
+                  <RadioButton x:Name="Colors2" Content="1 bit" GroupName="ColorGroup" IsEnabled="False" ToolTip.Tip="Black and White. Disabled due to bug."/>
+                  <RadioButton x:Name="Colors4" Content="2 bit" GroupName="ColorGroup" ToolTip.Tip="4 colors. Recommended for documents. Small file size."/>
+                  <RadioButton x:Name="Colors16" Content="4 bit" GroupName="ColorGroup" ToolTip.Tip="16 colors."/>
+                  <RadioButton x:Name="Colors256" Content="8 bit" GroupName="ColorGroup" IsChecked="True" ToolTip.Tip="256 colors. Recommended for most pictures."/>
+                  <RadioButton x:Name="Colors65536" Content="16 bit" GroupName="ColorGroup" ToolTip.Tip="65k colors. Recommended for detailed pictures with color gradients. Large file size."/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                   <TextBlock Text="Dither Level:" VerticalAlignment="Center" />
-                  <Slider x:Name="DitherSlider" Minimum="0" Maximum="1" Value="0.8" Width="200" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="8,0,0,0" />
+                  <Slider x:Name="DitherSlider" Minimum="0" Maximum="1" Value="0.8" Width="200" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="8,0,0,0" ToolTip.Tip="Improves perceived color range. Higher values may increase file size. Recommend 0.8 for pictures and 0.0 for documents." />
                   <TextBlock Text="{Binding Value, ElementName=DitherSlider, StringFormat='{}{0:F1}'}" VerticalAlignment="Center" Margin="8,0,0,0" />
                 </StackPanel>
               </StackPanel>
@@ -95,12 +101,11 @@
 
             <TabItem Header="GIF Settings">
               <StackPanel Margin="8" Spacing="8">
-                <TextBlock Text="Color Bucket Slider (axis-aligned buckets):" />
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                  <Slider x:Name="ChromaSlider" Minimum="1" Maximum="8" Value="4" TickFrequency="1" IsSnapToTickEnabled="True" Width="240" />
-                  <TextBlock Text="{Binding Value, ElementName=ChromaSlider, StringFormat='Bits per channel: {0}'}" VerticalAlignment="Center" />
+					<TextBlock Text="Color Quality:" VerticalAlignment="Center" />
+					<Slider x:Name="ChromaSlider" Minimum="1" Maximum="8" Value="4" TickFrequency="1" IsSnapToTickEnabled="True" Width="240"  ToolTip.Tip="Larger numbers increase picture quality. Smaller numbers decrease file size and improve playback speed. Recommended range: (3-5)."/>
+                  <TextBlock Text="{Binding Value, ElementName=ChromaSlider, StringFormat='{}'}" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="This slider groups nearby colors into axis-aligned buckets (2^bits levels per channel)." TextWrapping="Wrap" />
               </StackPanel>
             </TabItem>
           </TabControl>
@@ -116,11 +121,6 @@
         </StackPanel>
 		  
       </Border>
-
-		
-
-		
     </Grid>
-
   </DockPanel>
 </Window>

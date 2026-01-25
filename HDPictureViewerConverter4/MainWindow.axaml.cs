@@ -547,7 +547,7 @@ namespace HDPictureViewerConverter4
 
             // Make random frames grid for forPalette.png
             var rnd = new Random();
-            int sampleCount = Math.Min(25, frames.Count);
+            int sampleCount = Math.Min(256, frames.Count);
             var sampleIndices = Enumerable.Range(0, frames.Count).OrderBy(x => rnd.Next()).Take(sampleCount).ToList();
             int gridCols = (int)Math.Ceiling(Math.Sqrt(sampleCount));
             int gridRows = (int)Math.Ceiling((double)sampleCount / gridCols);
