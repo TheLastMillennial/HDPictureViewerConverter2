@@ -301,7 +301,6 @@ namespace HDPictureViewerConverter4
             // TODO: Apply color reduction and dithering according to selected settings. Placeholder: log selection
 
 
-            AppendLog($"Image color reduction requested: {settings.ColorCount} colors, dither {settings.DitherLevel.ToString()}.");
 
             padded.Dispose();
             return results;
@@ -346,6 +345,11 @@ namespace HDPictureViewerConverter4
             // Resize to at most 160x120 preserving aspect ratio: apply to each frame
             var frames = new System.Collections.Generic.List<SixLabors.ImageSharp.Image<Rgba32>>();
             var delays = new System.Collections.Generic.List<int>();
+            var padInfos = new System.Collections.Generic.List<(int Left, int Top, int Right, int Bottom)>();
+
+            const int TargetW = 160;
+            const int TargetH = 120;
+
             for (int i = 0; i < frameCount; i++)
             {
                 var frame = gif.Frames.CloneFrame(i); // ImageFrame<Rgba32>
@@ -371,41 +375,163 @@ namespace HDPictureViewerConverter4
                         imgFrame[xx, yy] = frame[xx, yy];
                     }
                 }
-                imgFrame.Mutate(x => x.Resize(new SixLabors.ImageSharp.Processing.ResizeOptions { Size = new SixLabors.ImageSharp.Size(160, 120), Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max }));
-                frames.Add(imgFrame);
+
+                // Resize to fit within 160x120 preserving aspect ratio
+                imgFrame.Mutate(x => x.Resize(new SixLabors.ImageSharp.Processing.ResizeOptions { Size = new SixLabors.ImageSharp.Size(TargetW, TargetH), Mode = SixLabors.ImageSharp.Processing.ResizeMode.Max }));
+
+                // If resized frame isn't exactly TargetW x TargetH, pad evenly on all sides with magenta (255,0,255)
+                if (imgFrame.Width != TargetW || imgFrame.Height != TargetH)
+                {
+                    int padLeft = (TargetW - imgFrame.Width) / 2;
+                    int padTop = (TargetH - imgFrame.Height) / 2;
+                    int padRight = TargetW - imgFrame.Width - padLeft;
+                    int padBottom = TargetH - imgFrame.Height - padTop;
+
+                    var padded = new SixLabors.ImageSharp.Image<Rgba32>(TargetW, TargetH);
+                    // fill with magenta sentinel
+                    for (int yy = 0; yy < TargetH; yy++)
+                        for (int xx = 0; xx < TargetW; xx++)
+                            padded[xx, yy] = new Rgba32(255, 0, 255, 255);
+
+                    // draw the resized frame centered
+                    padded.Mutate(ctx => ctx.DrawImage(imgFrame, new SixLabors.ImageSharp.Point(padLeft, padTop), 1f));
+
+                    frames.Add(padded);
+                    padInfos.Add((padLeft, padTop, padRight, padBottom));
+
+                    imgFrame.Dispose();
+                }
+                else
+                {
+                    frames.Add(imgFrame);
+                    padInfos.Add((0, 0, 0, 0));
+                }
+
                 delays.Add(delayMs);
             }
 
             // Apply axis-aligned quantization controlled by chromaBits slider
             AppendLog($"Applying axis-aligned quantization: {chromaBits} bits per channel (levels={1 << chromaBits})");
 
-            //todo: compare each pixel to the previous non magenta pixel
-            // Replace unchanged pixels with magenta (255,0,255) and save each frame
-            SixLabors.ImageSharp.Image<Rgba32>? prev = null;
+
+            // Replace unchanged pixels with magenta (255,0,255) compared to the previous non-magenta pixel and save each frame
+            SixLabors.ImageSharp.Image<Rgba32>? lastReal = null; // stores the most recent non-magenta pixel per position
             var outDirectory = Directory.GetCurrentDirectory();
             for (int i = 0; i < frames.Count; i++)
             {
                 var fr = frames[i];
                 int delayMs = delays[i];
+                var pad = padInfos[i];
 
                 // quantize current frame in-place using axis-aligned buckets
                 QuantizeImageAxisAligned(fr, chromaBits);
 
-                if (prev != null)
+                // Ensure padding region retains exact magenta sentinel after quantization
+                if (pad.Left != 0 || pad.Top != 0 || pad.Right != 0 || pad.Bottom != 0)
                 {
-                    int w = Math.Min(prev.Width, fr.Width);
-                    int h = Math.Min(prev.Height, fr.Height);
+                    int w = fr.Width;
+                    int h = fr.Height;
+                    // top rows
+                    for (int y = 0; y < pad.Top; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                            fr[x, y] = new Rgba32(255, 0, 255, 255);
+                    }
+                    // bottom rows
+                    for (int y = h - pad.Bottom; y < h; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                            fr[x, y] = new Rgba32(255, 0, 255, 255);
+                    }
+                    // left/right columns in the middle area
+                    for (int y = pad.Top; y < h - pad.Bottom; y++)
+                    {
+                        for (int x = 0; x < pad.Left; x++)
+                            fr[x, y] = new Rgba32(255, 0, 255, 255);
+                        for (int x = w - pad.Right; x < w; x++)
+                            fr[x, y] = new Rgba32(255, 0, 255, 255);
+                    }
+                }
+
+                // If this is the first frame, initialize lastReal with the quantized pixels and do not mark anything magenta
+                if (lastReal == null)
+                {
+                    lastReal = fr.Clone();
+                }
+                else
+                {
+                    // Ensure lastReal is at least as large as current frame so we can compare every pixel in the overlap.
+                    int targetW = Math.Max(lastReal.Width, fr.Width);
+                    int targetH = Math.Max(lastReal.Height, fr.Height);
+                    if (targetW != lastReal.Width || targetH != lastReal.Height)
+                    {
+                        var expanded = new SixLabors.ImageSharp.Image<Rgba32>(targetW, targetH);
+                        // Fill expanded with fully transparent pixels (so they won't accidentally match)
+                        for (int yy = 0; yy < targetH; yy++)
+                            for (int xx = 0; xx < targetW; xx++)
+                                expanded[xx, yy] = new Rgba32(0, 0, 0, 0);
+
+                        // copy previous lastReal into expanded
+                        for (int yy = 0; yy < lastReal.Height; yy++)
+                            for (int xx = 0; xx < lastReal.Width; xx++)
+                                expanded[xx, yy] = lastReal[xx, yy];
+
+                        lastReal.Dispose();
+                        lastReal = expanded;
+                    }
+
+                    int w = Math.Min(lastReal.Width, fr.Width);
+                    int h = Math.Min(lastReal.Height, fr.Height);
                     for (int y = 0; y < h; y++)
                     {
                         for (int x = 0; x < w; x++)
                         {
-                            var pprev = prev[x, y];
+                            var plast = lastReal[x, y];
                             var pcur = fr[x, y];
-                            if (pprev.R == pcur.R && pprev.G == pcur.G && pprev.B == pcur.B && pprev.A == pcur.A)
+                            // Compare current pixel to the previous non-magenta pixel stored in lastReal.
+                            if (plast.R == pcur.R && plast.G == pcur.G && plast.B == pcur.B && plast.A == pcur.A)
                             {
+                                // unchanged -> mark magenta sentinel
                                 fr[x, y] = new Rgba32(255, 0, 255, 255);
                             }
+                            else
+                            {
+                                // changed -> update lastReal to this new non-magenta pixel
+                                lastReal[x, y] = pcur;
+                            }
                         }
+                    }
+
+                    // If current frame is larger than lastReal in either dimension, copy the extra non-overlapping pixels into lastReal
+                    if (fr.Width > lastReal.Width || fr.Height > lastReal.Height)
+                    {
+                        int copyW = fr.Width;
+                        int copyH = fr.Height;
+                        var expanded = new SixLabors.ImageSharp.Image<Rgba32>(copyW, copyH);
+                        // initialize expanded with transparent
+                        for (int yy = 0; yy < copyH; yy++)
+                            for (int xx = 0; xx < copyW; xx++)
+                                expanded[xx, yy] = new Rgba32(0, 0, 0, 0);
+
+                        // copy existing lastReal
+                        for (int yy = 0; yy < lastReal.Height; yy++)
+                            for (int xx = 0; xx < lastReal.Width; xx++)
+                                expanded[xx, yy] = lastReal[xx, yy];
+
+                        // copy current frame's non-magenta pixels into expanded
+                        for (int yy = 0; yy < fr.Height; yy++)
+                            for (int xx = 0; xx < fr.Width; xx++)
+                            {
+                                var p = fr[xx, yy];
+                                // if current pixel is not the magenta sentinel, store it
+                                if (!(p.R == 255 && p.G == 0 && p.B == 255 && p.A == 255))
+                                {
+                                    expanded[xx, yy] = p;
+                                }
+                            }
+
+                        lastReal.Dispose();
+                        lastReal = expanded;
                     }
                 }
 
@@ -414,9 +540,6 @@ namespace HDPictureViewerConverter4
                 await fr.SaveAsPngAsync(full);
                 createdFiles.Add(full);
                 results.Add((full, delayMs));
-
-                prev?.Dispose();
-                prev = fr.Clone();
 
                 var progress = (double)(i + 1) / frames.Count * 100.0;
                 await Dispatcher.UIThread.InvokeAsync(() => ImageProgressBar.Value = progress);
@@ -463,12 +586,11 @@ namespace HDPictureViewerConverter4
 
             // dispose frames
             foreach (var f in frames) f.Dispose();
-            prev?.Dispose();
+            lastReal?.Dispose();
             palette.Dispose();
 
             return results;
         }
-
 
         // Empty convertImg function per requirement
         private async Task convertImg(List<string> savedFiles, string nameID, ImageProcessingSettings settings)
@@ -659,12 +781,6 @@ namespace HDPictureViewerConverter4
 
             foreach (var frame in framesData)
             {
-
-            }
-
-
-            foreach (var frame in framesData)
-            {
                 // skip palette image entry when generating per-frame converts/outputs
                 if (Path.GetFileName(frame.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase))
                     continue;
@@ -698,13 +814,13 @@ namespace HDPictureViewerConverter4
             yamlOutputsPal += "\n  - type: appvar" +
                             "\n    name: HP" + nameID + "0000" + //0000 used as placeholders, they don't signify anything
                             "\n    source-format: c" +
-                            /*HDGIFV01 Poppy___ PA123456 
+                            /*HDGIFV01 Poppy___ PA012345 
                              *Version: HDGIFV01 
                              *Image name: Poppy___
                              * Image ID: PA
-                             * Frame number: 123456
+                             * Frame number: 012345 (-2 accounts for 0 index and excluding palette
                              */
-                            "\n    header-string: HDGIFV01" + filename8 + lastFilename +
+                            "\n    header-string: HDGIFV01" + filename8 + nameID + (framesData.Count - 2).ToString("D6") +
                             "\n    archived: true" +
                             "\n    palettes:" +
                             "\n      - my_palette";
@@ -721,14 +837,6 @@ namespace HDPictureViewerConverter4
             {
                 IOException e = new IOException("Convimg crash. Try restarting HD Picture Viewer Converter or save the picture as a separate .png file.");
                 throw e;
-            }
-
-            // Log per-frame delays for visibility
-            foreach (var f in framesData)
-            {
-                if (Path.GetFileName(f.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase))
-                    continue;
-                AppendLog($"Frame {Path.GetFileName(f.Path)} delay = {f.DelayMs} ms");
             }
 
             await Task.CompletedTask;
