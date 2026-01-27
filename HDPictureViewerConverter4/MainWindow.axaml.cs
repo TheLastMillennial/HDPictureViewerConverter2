@@ -147,21 +147,39 @@ namespace HDPictureViewerConverter4
             {
                 var settings = await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    int chromaBits = 4;
-                    try { chromaBits = (int)ChromaSlider.Value; } catch { }
                     int colorCount = Colors2.IsChecked == true ? 2
                                     : Colors4.IsChecked == true ? 4
                                     : Colors16.IsChecked == true ? 16
                                     : Colors65536.IsChecked == true ? 65536
                                     : 256;
+
+                    // optional runtime-read slider named "PaletteSlider" (UI side: add a Slider with Name="PaletteSlider")
+                    int paletteSize = 256;
+                    try
+                    {
+                        var slider = this.FindControl<Slider>("PaletteSlider");
+                        if (slider != null)
+                        {
+                            paletteSize = (int)slider.Value;
+                        }
+                    }
+                    catch
+                    {
+                        // ignore; keep default
+                    }
+
+                    // clamp palette to 3..256 for paletted workflows (16bpp stays as-is)
+                    if (paletteSize < 3) paletteSize = 3;
+                    if (paletteSize > 256) paletteSize = 256;
+
                     return new ImageProcessingSettings(
                         ResizeMaintain: ResizeMaintain.IsChecked == true,
                         ResizeStretch: ResizeStretch.IsChecked == true,
                         ResizeDoNot: ResizeDoNot.IsChecked == true,
                         ColorCount: colorCount,
                         DitherLevel: DitherSlider.Value,
-                        ChromaBits: chromaBits,
-                        ImageName: item.FileName
+                        ImageName: item.FileName,
+                        PaletteSize: paletteSize
                     );
                 });
 
@@ -171,8 +189,8 @@ namespace HDPictureViewerConverter4
                 {
                     if (ext == ".gif")
                     {
-                        // ProcessGifAsync now returns a list of (path, delayMs) tuples
-                        framesData = await ProcessGifAsync(item, createdFiles, settings.ChromaBits);
+                        // ProcessGifAsync now returns a list of (path, delayMs) tuples and accepts settings
+                        framesData = await ProcessGifAsync(item, createdFiles, settings);
                         await convertGif(framesData, item.ID, settings);
                     }
                     else
@@ -319,24 +337,8 @@ namespace HDPictureViewerConverter4
             return (byte)Math.Round(rep);
         }
 
-        private void QuantizeImageAxisAligned(SixLabors.ImageSharp.Image<Rgba32> img, int bits)
-        {
-            int levels = 1 << bits;
-            for (int y = 0; y < img.Height; y++)
-            {
-                for (int x = 0; x < img.Width; x++)
-                {
-                    var p = img[x, y];
-                    var rq = QuantizeComponent(p.R, levels);
-                    var gq = QuantizeComponent(p.G, levels);
-                    var bq = QuantizeComponent(p.B, levels);
-                    img[x, y] = new Rgba32(rq, gq, bq, p.A);
-                }
-            }
-        }
-
         // Return list of (filePath, delayMs) so convertGif can know each frame's duration
-        private async Task<List<(string Path, int DelayMs)>> ProcessGifAsync(QueueItem item, List<string> createdFiles, int chromaBits)
+        private async Task<List<(string Path, int DelayMs)>> ProcessGifAsync(QueueItem item, List<string> createdFiles, ImageProcessingSettings settings)
         {
             var results = new System.Collections.Generic.List<(string Path, int DelayMs)>();
             using var gif = SixLabors.ImageSharp.Image.Load<Rgba32>(item.FilePath);
@@ -411,8 +413,56 @@ namespace HDPictureViewerConverter4
             }
 
             // Apply axis-aligned quantization controlled by chromaBits slider
-            AppendLog($"Applying axis-aligned quantization: {chromaBits} bits per channel (levels={1 << chromaBits})");
+            AppendLog($"Applying quantization");
 
+            // Build a global palette from all frames' colors (excluding magenta sentinel).
+            int paletteSize = settings.PaletteSize;
+            // Only build palette for paletted workflows (not RGB565 16bpp)
+            bool buildPalette = (paletteSize >= 3 && paletteSize <= 256 && settings.ColorCount != 65536);
+
+            List<Rgba32> globalPalette = null;
+            if (buildPalette)
+            {
+                AppendLog($"Building global palette from all frames (target {paletteSize} colors)...");
+                // collect samples (avoid including magenta sentinel)
+                var samples = new List<Rgba32>();
+                var rnd = new Random();
+                const int MaxSamples = 100_000;
+                for (int fi = 0; fi < frames.Count; fi++)
+                {
+                    var fr = frames[fi];
+                    int w = fr.Width;
+                    int h = fr.Height;
+                    int total = w * h;
+                    int stride = Math.Max(1, total / Math.Min(total, 1000)); // sample fractionally across small frames
+                    // sample uniformly: pick up to MaxSamples across all frames
+                    for (int y = 0; y < h; y += 1)
+                    {
+                        for (int x = 0; x < w; x += stride)
+                        {
+                            var p = fr[x, y];
+                            if (!(p.R == 255 && p.G == 0 && p.B == 255 && p.A == 255)) // skip magenta sentinel
+                            {
+                                samples.Add(new Rgba32(p.R, p.G, p.B, 255));
+                                if (samples.Count >= MaxSamples) break;
+                            }
+                        }
+                        if (samples.Count >= MaxSamples) break;
+                    }
+                    if (samples.Count >= MaxSamples) break;
+                }
+
+                if (samples.Count == 0)
+                {
+                    AppendLog("No valid pixels found to build palette; skipping palette build.");
+                    globalPalette = new List<Rgba32> { new Rgba32(0, 0, 0, 255) }; // fallback single color
+                }
+                else
+                {
+                    globalPalette = BuildPaletteKMeans(samples, paletteSize, seed: Environment.TickCount);
+                    AppendLog($"Palette built ({globalPalette.Count} colors).");
+                }
+            }
 
             // Replace unchanged pixels with magenta (255,0,255) compared to the previous non-magenta pixel and save each frame
             SixLabors.ImageSharp.Image<Rgba32>? lastReal = null; // stores the most recent non-magenta pixel per position
@@ -422,9 +472,6 @@ namespace HDPictureViewerConverter4
                 var fr = frames[i];
                 int delayMs = delays[i];
                 var pad = padInfos[i];
-
-                // quantize current frame in-place using axis-aligned buckets
-                QuantizeImageAxisAligned(fr, chromaBits);
 
                 // Ensure padding region retains exact magenta sentinel after quantization
                 if (pad.Left != 0 || pad.Top != 0 || pad.Right != 0 || pad.Bottom != 0)
@@ -456,6 +503,11 @@ namespace HDPictureViewerConverter4
                 // If this is the first frame, initialize lastReal with the quantized pixels and do not mark anything magenta
                 if (lastReal == null)
                 {
+                    // If we have a global palette, quantize the first frame to it (so lastReal stores palette colors)
+                    if (buildPalette && globalPalette != null)
+                    {
+                        QuantizeImageWithPalette(fr, globalPalette);
+                    }
                     lastReal = fr.Clone();
                 }
                 else
@@ -478,6 +530,12 @@ namespace HDPictureViewerConverter4
 
                         lastReal.Dispose();
                         lastReal = expanded;
+                    }
+
+                    // If we have a global palette, quantize current frame to it BEFORE comparing to lastReal
+                    if (buildPalette && globalPalette != null)
+                    {
+                        QuantizeImageWithPalette(fr, globalPalette);
                     }
 
                     int w = Math.Min(lastReal.Width, fr.Width);
@@ -545,51 +603,206 @@ namespace HDPictureViewerConverter4
                 await Dispatcher.UIThread.InvokeAsync(() => ImageProgressBar.Value = progress);
             }
 
-            // Make random frames grid for forPalette.png
-            var rnd = new Random();
-            int sampleCount = Math.Min(256, frames.Count);
-            var sampleIndices = Enumerable.Range(0, frames.Count).OrderBy(x => rnd.Next()).Take(sampleCount).ToList();
-            int gridCols = (int)Math.Ceiling(Math.Sqrt(sampleCount));
-            int gridRows = (int)Math.Ceiling((double)sampleCount / gridCols);
-            int cellW = frames[0].Width;
-            int cellH = frames[0].Height;
-            int gridW = cellW * gridCols;
-            int gridH = cellH * gridRows;
-            // scale to at most 2600x2600
-            double scale = Math.Min(1.0, 2600.0 / Math.Max(gridW, gridH));
-            int finalW = (int)(gridW * scale);
-            int finalH = (int)(gridH * scale);
-
-            var palette = new SixLabors.ImageSharp.Image<Rgba32>(gridW, gridH);
-            // fill black
-            for (int yy = 0; yy < gridH; yy++)
-                for (int xx = 0; xx < gridW; xx++)
-                    palette[xx, yy] = new Rgba32(0, 0, 0, 255);
-
-            for (int idx = 0; idx < sampleIndices.Count; idx++)
+            // Create forPalette.png from computed palette (if built); otherwise fallback to sampling frames (original behavior)
+            if (globalPalette != null && globalPalette.Count > 0)
             {
-                int col = idx % gridCols;
-                int row = idx / gridCols;
-                var tile = frames[sampleIndices[idx]];
-                palette.Mutate(ctx => ctx.DrawImage(tile, new SixLabors.ImageSharp.Point(col * cellW, row * cellH), 1f));
+                var palPath = Path.Combine(outDirectory, "forPalette.png");
+                CreatePaletteImage(globalPalette, palPath);
+                createdFiles.Add(palPath);
+                results.Add((palPath, 0));
             }
-
-            if (scale < 1.0)
+            else
             {
-                palette.Mutate(ctx => ctx.Resize(finalW, finalH));
+                // fallback to previous behavior: Make random frames grid for forPalette.png
+                var rnd = new Random();
+                int sampleCount = Math.Min(256, frames.Count);
+                var sampleIndices = Enumerable.Range(0, frames.Count).OrderBy(x => rnd.Next()).Take(sampleCount).ToList();
+                int gridCols = (int)Math.Ceiling(Math.Sqrt(sampleCount));
+                int gridRows = (int)Math.Ceiling((double)sampleCount / gridCols);
+                int cellW = frames[0].Width;
+                int cellH = frames[0].Height;
+                int gridW = cellW * gridCols;
+                int gridH = cellH * gridRows;
+                // scale to at most 2600x2600
+                double scale = Math.Min(1.0, 2600.0 / Math.Max(gridW, gridH));
+                int finalW = (int)(gridW * scale);
+                int finalH = (int)(gridH * scale);
+
+                var palette = new SixLabors.ImageSharp.Image<Rgba32>(gridW, gridH);
+                // fill black
+                for (int yy = 0; yy < gridH; yy++)
+                    for (int xx = 0; xx < gridW; xx++)
+                        palette[xx, yy] = new Rgba32(0, 0, 0, 255);
+
+                for (int idx = 0; idx < sampleIndices.Count; idx++)
+                {
+                    int col = idx % gridCols;
+                    int row = idx / gridCols;
+                    var tile = frames[sampleIndices[idx]];
+                    palette.Mutate(ctx => ctx.DrawImage(tile, new SixLabors.ImageSharp.Point(col * cellW, row * cellH), 1f));
+                }
+
+                if (scale < 1.0)
+                {
+                    palette.Mutate(ctx => ctx.Resize(finalW, finalH));
+                }
+                var palPath = Path.Combine(outDirectory, "forPalette.png");
+                await palette.SaveAsPngAsync(palPath);
+                createdFiles.Add(palPath);
+                // Note: palette is not a frame, delay is 0
+                results.Add((palPath, 0));
+                palette.Dispose();
             }
-            var palPath = Path.Combine(outDirectory, "forPalette.png");
-            await palette.SaveAsPngAsync(palPath);
-            createdFiles.Add(palPath);
-            // Note: palette is not a frame, delay is 0
-            results.Add((palPath, 0));
 
             // dispose frames
             foreach (var f in frames) f.Dispose();
             lastReal?.Dispose();
-            palette.Dispose();
 
             return results;
+        }
+
+        // Simple K-means in RGB space to build palette from samples
+        private List<Rgba32> BuildPaletteKMeans(List<Rgba32> samples, int k, int seed = 0)
+        {
+            if (samples == null || samples.Count == 0) return new List<Rgba32>();
+            k = Math.Min(k, 256);
+            k = Math.Max(k, 1);
+
+            var rnd = (seed == 0) ? new Random() : new Random(seed);
+
+            // if samples fewer than k, return distinct samples padded with black
+            var distinct = samples.Select(c => (c.R, c.G, c.B)).Distinct().Take(k).ToList();
+            if (distinct.Count <= k && distinct.Count < k)
+            {
+                var list = distinct.Select(t => new Rgba32((byte)t.R, (byte)t.G, (byte)t.B, 255)).ToList();
+                while (list.Count < k) list.Add(new Rgba32(0, 0, 0, 255));
+                return list;
+            }
+
+            // initialize centers by picking random samples
+            var centers = new (double R, double G, double B)[k];
+            var used = new HashSet<int>();
+            for (int i = 0; i < k; i++)
+            {
+                int idx;
+                do { idx = rnd.Next(samples.Count); } while (used.Contains(idx) && used.Count < samples.Count);
+                used.Add(idx);
+                var s = samples[idx];
+                centers[i] = (s.R, s.G, s.B);
+            }
+
+            var assignments = new int[samples.Count];
+            for (int iter = 0; iter < 20; iter++)
+            {
+                bool changed = false;
+                // assign
+                for (int i = 0; i < samples.Count; i++)
+                {
+                    var s = samples[i];
+                    int best = 0;
+                    double bestDist = double.MaxValue;
+                    for (int c = 0; c < k; c++)
+                    {
+                        var cent = centers[c];
+                        double dr = cent.R - s.R;
+                        double dg = cent.G - s.G;
+                        double db = cent.B - s.B;
+                        double d2 = dr * dr + dg * dg + db * db;
+                        if (d2 < bestDist) { bestDist = d2; best = c; }
+                    }
+                    if (assignments[i] != best) { changed = true; assignments[i] = best; }
+                }
+                // recompute
+                var sums = new (double R, double G, double B, int Count)[k];
+                for (int i = 0; i < samples.Count; i++)
+                {
+                    int a = assignments[i];
+                    var s = samples[i];
+                    sums[a].R += s.R;
+                    sums[a].G += s.G;
+                    sums[a].B += s.B;
+                    sums[a].Count++;
+                }
+                for (int c = 0; c < k; c++)
+                {
+                    if (sums[c].Count > 0)
+                    {
+                        centers[c].R = sums[c].R / sums[c].Count;
+                        centers[c].G = sums[c].G / sums[c].Count;
+                        centers[c].B = sums[c].B / sums[c].Count;
+                    }
+                    else
+                    {
+                        // re-seed empty cluster
+                        var s = samples[rnd.Next(samples.Count)];
+                        centers[c] = (s.R, s.G, s.B);
+                    }
+                }
+                if (!changed) break;
+            }
+
+            var palette = centers.Select(c => new Rgba32((byte)Math.Round(c.R), (byte)Math.Round(c.G), (byte)Math.Round(c.B), 255)).ToList();
+
+            // Deduplicate near-identical colors (optional)
+            var unique = new List<Rgba32>();
+            foreach (var col in palette)
+            {
+                if (!unique.Any(u => u.R == col.R && u.G == col.G && u.B == col.B))
+                    unique.Add(col);
+            }
+            // ensure at least 1 color
+            if (unique.Count == 0) unique.Add(new Rgba32(0, 0, 0, 255));
+            return unique;
+        }
+
+        // Replace each pixel by nearest palette color; keep magenta sentinel unchanged
+        private void QuantizeImageWithPalette(Image<Rgba32> img, List<Rgba32> palette)
+        {
+            if (img == null || palette == null || palette.Count == 0) return;
+            int w = img.Width;
+            int h = img.Height;
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    var p = img[x, y];
+                    if (p.R == 255 && p.G == 0 && p.B == 255 && p.A == 255)
+                        continue; // keep sentinel
+                    int bestIdx = 0;
+                    double bestDist = double.MaxValue;
+                    for (int i = 0; i < palette.Count; i++)
+                    {
+                        var c = palette[i];
+                        double dr = c.R - p.R;
+                        double dg = c.G - p.G;
+                        double db = c.B - p.B;
+                        double d2 = dr * dr + dg * dg + db * db;
+                        if (d2 < bestDist) { bestDist = d2; bestIdx = i; }
+                    }
+                    var chosen = palette[bestIdx];
+                    img[x, y] = new Rgba32(chosen.R, chosen.G, chosen.B, p.A);
+                }
+            }
+        }
+
+        // Create a visual palette image (1 pixel per color in a single row) to be used as forPalette.png by convimg
+        private void CreatePaletteImage(List<Rgba32> palette, string path)
+        {
+            if (palette == null || palette.Count == 0) return;
+
+            // One pixel per palette color arranged horizontally in a single row.
+            int w = palette.Count;
+            int h = 1;
+
+            using var img = new SixLabors.ImageSharp.Image<Rgba32>(w, h);
+
+            for (int x = 0; x < w; x++)
+            {
+                var c = palette[x];
+                img[x, 0] = new Rgba32(c.R, c.G, c.B, 255);
+            }
+
+            img.SaveAsPng(path);
         }
 
         // Empty convertImg function per requirement
@@ -944,7 +1157,7 @@ namespace HDPictureViewerConverter4
         bool ResizeDoNot,
         int ColorCount,
         double DitherLevel,
-        int ChromaBits,
-        string ImageName
+        string ImageName,
+        int PaletteSize
     );
 }

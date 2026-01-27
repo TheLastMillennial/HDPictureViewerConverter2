@@ -104,8 +104,8 @@
               <StackPanel Margin="8" Spacing="8">
                 <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
 					<TextBlock Text="Color Quality:" VerticalAlignment="Center" />
-					<Slider x:Name="ChromaSlider" Minimum="1" Maximum="8" Value="4" TickFrequency="1" IsSnapToTickEnabled="True" Width="240"  ToolTip.Tip="Larger numbers increase picture quality. Smaller numbers decrease file size and improve playback speed. Recommended range: (3-5)."/>
-                  <TextBlock Text="{Binding Value, ElementName=ChromaSlider, StringFormat='{}'}" VerticalAlignment="Center" />
+					<Slider x:Name="PaletteSlider" Minimum="4" Maximum="256" Value="32" TickFrequency="4" IsSnapToTickEnabled="True" Width="240"  ToolTip.Tip="Higher increases picture quality. Lower decreases file size and improves playback speed. Recommended range: 16-64." />
+					<NumericUpDown Minimum="3" Maximum="256" Increment="1" Value="{Binding Value, ElementName=PaletteSlider, Mode=TwoWay}" VerticalAlignment="Center" ToolTip.Tip="Higher increases picture quality. Lower decreases file size and improves playback speed. Recommended range: 16-64." />
                 </StackPanel>
               </StackPanel>
             </TabItem>
