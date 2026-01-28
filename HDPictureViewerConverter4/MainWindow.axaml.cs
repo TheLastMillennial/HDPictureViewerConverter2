@@ -324,19 +324,6 @@ namespace HDPictureViewerConverter4
             return results;
         }
 
-        private byte QuantizeComponent(byte v, int levels)
-        {
-            if (levels <= 1) return 0;
-            int bucket = (v * levels) / 256; // 0..levels-1
-            if (bucket < 0) bucket = 0;
-            if (bucket >= levels) bucket = levels - 1;
-            // representative mapped to 0..255 with equal spacing
-            if (levels == 1) return 0;
-            if (levels == 256) return v;
-            double rep = (levels == 1) ? 0.0 : (bucket * 255.0 / (levels - 1));
-            return (byte)Math.Round(rep);
-        }
-
         // Return list of (filePath, delayMs) so convertGif can know each frame's duration
         private async Task<List<(string Path, int DelayMs)>> ProcessGifAsync(QueueItem item, List<string> createdFiles, ImageProcessingSettings settings)
         {
@@ -824,7 +811,7 @@ namespace HDPictureViewerConverter4
             // get max image dimensions in squares
             string strImgDimensions = getImgMaxDimensions(savedFiles, nameID);
             // name of image truncated/padded to 8 chars
-            string filename8 = settings.ImageName.Length >= 8 ? settings.ImageName.Substring(0, 8) : settings.ImageName.PadRight(8, ' ');
+            string filename8 = settings.ImageName.Length >= 8 ? settings.ImageName.Substring(0, 8) : settings.ImageName.PadRight(8, '_');
 
 
             if (!bIsPicture16BPP)
@@ -922,7 +909,8 @@ namespace HDPictureViewerConverter4
 
                     string filename = Path.GetFileNameWithoutExtension(filepath); // e.g. AB000003
                     string saveName = filename + ".png";
-                    string strHorizVertSquares = filename.Substring(2, 6);// gets 000003
+                    // First picture stores picture size. All others store their place on the grid gets 000003
+                    string strHorizVertSquares = strVersion.Equals("A") ? strImgDimensions : filename.Substring(2, 6);
 
                     yamlConverts += (
                         "\n  - name: " + filename +
