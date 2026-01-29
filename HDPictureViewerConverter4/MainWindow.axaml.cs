@@ -876,7 +876,12 @@ namespace HDPictureViewerConverter4
                         "\n  - type: appvar" +
                         "\n    name: " + filename +
                         "\n    source-format: c" +
-                        "\n    header-string: " + " HDPICCV4" + filename8 +
+                        /* HDPICV5 1 PuppySma
+                         * HDPICV5 = Format version.
+                         * 1 = number of pictures in this appvar. Currently unused. 
+                         * 
+                         */
+                        "\n    header-string: " + " HDPICV51" + filename8 +
                         "\n    archived: true" +
                         "\n    converts:" +
                         "\n      - " + filename);
@@ -884,22 +889,7 @@ namespace HDPictureViewerConverter4
             }
             else
             {
-                //16 bpp palette appvar only used for metadata
-                yamlOutputsPal += ("\n  - type: appvar" +
-                                "\n    name: HP" + nameID + "0000" + //0000 used as placeholders, they don't signify anything
-                                "\n    source-format: c" +
-                                /*  e.g. HDPALV11 16 PuppySma PS 004003
-                                    palette version: HDPALV11
-                                    bpp: 16
-                                    Image name: PuppySma
-                                    Image ID: PS
-                                    Max size in squares: 004003
-                                */
-                                "\n    header-string: HDPALV1116" + filename8 + nameID + strImgDimensions +
-                                "\n    archived: true"
-                                );
-
-                //Only the top leftmost image is notated with an A.
+                //16bpp Only the top leftmost image is notated with an A.
                 //This makes it quick and easy to count the number of complete images on the calc
                 String strVersion = "A";
                 foreach (string filepath in savedFiles)
@@ -926,14 +916,15 @@ namespace HDPictureViewerConverter4
                         "\n  - type: appvar" +
                         "\n    name: " + filename +
                         "\n    source-format: c" +
-                        /* e.g. HDPIC16 A PuppySma PS 004003
-                            picture version: HDPIC16
+                        /* e.g. HDPICF A 1 PuppySma PS 004003
+                            picture version: HDPICF
                             IsFirstImage? A = true, B = false
+                            1 = number of pictures in this appvar. Currently unused.
                             Image name: PuppySma
                             Image ID: PS
                             Max size in squares: 004003
                         */
-                        "\n    header-string: " + " HDPIC16" + strVersion + filename8 + nameID + strHorizVertSquares +
+                        "\n    header-string: " + "HDPICF" + strVersion + "1" + filename8 + nameID + strHorizVertSquares +
                         "\n    archived: true" +
                         "\n    converts:" +
                         "\n      - " + filename);
@@ -988,8 +979,9 @@ namespace HDPictureViewerConverter4
 
                 string filename = Path.GetFileNameWithoutExtension(frame.Path);
                 string saveName = Path.GetFileName(frame.Path);
-                // header-string uses 4-digit ms value (up to 9999)
-                string headerString = frame.DelayMs.ToString("D4");
+                // header-string uses 4-digit ms value (up to 9999) 
+                // 1 for frames-per-appvar (currently unused)
+                string headerString = frame.DelayMs.ToString("D4") + "1";
 
                 yamlConvert +=
                     "\n  - name: " + filename +
@@ -1015,13 +1007,13 @@ namespace HDPictureViewerConverter4
             yamlOutputsPal += "\n  - type: appvar" +
                             "\n    name: HP" + nameID + "0000" + //0000 used as placeholders, they don't signify anything
                             "\n    source-format: c" +
-                            /*HDGIFV01 Poppy___ PA012345 
-                             *Version: HDGIFV01 
+                            /*HDGIFV00 Poppy___ PA012345 
+                             *Format Version: HDGIFV00
                              *Image name: Poppy___
                              * Image ID: PA
                              * Frame number: 012345 (-2 accounts for 0 index and excluding palette
                              */
-                            "\n    header-string: HDGIFV01" + filename8 + nameID + (framesData.Count - 2).ToString("D6") +
+                            "\n    header-string: HDGIFV00" + filename8 + nameID + (framesData.Count - 2).ToString("D6") +
                             "\n    archived: true" +
                             "\n    palettes:" +
                             "\n      - my_palette";
