@@ -113,14 +113,13 @@
 			<Separator></Separator>
 			
 			<StackPanel Margin="8" Spacing="8">
-				<TextBlock Text="Progress:" />
-				<ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
-
-				<TextBlock Text="Log:" />
-				<TextBox x:Name="ImageLog" AcceptsReturn="True" Height="150" IsReadOnly="True"/>
+			    <TextBlock Text="Progress:" />
+			    <ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
+			    <TextBlock Text="Log:" />
+			    <TextBox x:Name="ImageLog" AcceptsReturn="True" Height = "150" VerticalAlignment="Stretch" IsReadOnly="True"/>
+			    <TextBlock Text="TheLastMillennial - 2026" HorizontalAlignment ="Right"/>
 			</StackPanel>
         </StackPanel>
-		  
       </Border>
     </Grid>
   </DockPanel>

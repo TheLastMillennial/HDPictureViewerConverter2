@@ -122,11 +122,11 @@ namespace HDPictureViewerConverter4
                     // After success remove
                     _queue.RemoveAt(0);
                 }
-                AppendLog("All conversions completed.");
+                AppendLog("DONE: No more files to convert.");
             }
             catch (Exception ex)
             {
-                AppendLog($"Error during conversion: {ex.Message}");
+                AppendLog($"ERROR during conversion: {ex.Message}");
             }
             finally
             {
@@ -228,11 +228,11 @@ namespace HDPictureViewerConverter4
                 foreach (var f in Directory.GetFiles(dir, "*.h")) try { File.Delete(f); } catch { }
 
 
-                AppendLog($"Successfully processed {item.FileName}");
+                AppendLog($"SUCCESS: {item.FileName}");
             }
             catch (Exception ex)
             {
-                AppendLog($"Failed to process {item.FileName}: {ex.Message}");
+                AppendLog($"FAILURE: {item.FileName}: {ex.Message}");
             }
             finally
             {
@@ -400,7 +400,7 @@ namespace HDPictureViewerConverter4
             }
 
             // Apply axis-aligned quantization controlled by chromaBits slider
-            AppendLog($"Applying quantization");
+            //AppendLog($"Applying quantization...");
 
             // Build a global palette from all frames' colors (excluding magenta sentinel).
             int paletteSize = settings.PaletteSize;
@@ -410,7 +410,7 @@ namespace HDPictureViewerConverter4
             List<Rgba32> globalPalette = null;
             if (buildPalette)
             {
-                AppendLog($"Building global palette from all frames (target {paletteSize} colors)...");
+                //AppendLog($"Building global palette from all frames (target {paletteSize} colors)...");
                 // collect samples (avoid including magenta sentinel)
                 var samples = new List<Rgba32>();
                 var rnd = new Random();
@@ -447,7 +447,7 @@ namespace HDPictureViewerConverter4
                 else
                 {
                     globalPalette = BuildPaletteKMeans(samples, paletteSize, seed: Environment.TickCount);
-                    AppendLog($"Palette built ({globalPalette.Count} colors).");
+                    //AppendLog($"Palette built ({globalPalette.Count} colors).");
                 }
             }
 
@@ -797,7 +797,7 @@ namespace HDPictureViewerConverter4
         {
             // Read UI settings on the UI thread because this method may be called from a background thread
 
-            AppendLog($"convertImg called with {savedFiles.Count} files for ID={nameID} (stub). Settings: resize={settings.ResizeMaintain}, colors={settings.ColorCount}, dither={settings.DitherLevel:F1}");
+            AppendLog($"Converting picture ({nameID}) with {savedFiles.Count} subimages...");
 
             string yamlLinesList = "";
             string yamlPalettes = "";
@@ -940,7 +940,7 @@ namespace HDPictureViewerConverter4
             Thread.Sleep(250); // ensure file write completes before starting convimg
 
             // Start convimg process based on OS
-            LaunchConvimg();
+            LaunchConvimg(savedFiles.Count());
 
             //Verify expected number of .8xv files created. 16bpp doesn't export a palette
             if (Directory.GetFiles(Directory.GetCurrentDirectory(), "*.8xv").Length < (bIsPicture16BPP ? savedFiles.Count - 1 : savedFiles.Count))
@@ -953,7 +953,7 @@ namespace HDPictureViewerConverter4
         // convertGif now receives per-frame paths and delays (milliseconds)
         private async Task convertGif(System.Collections.Generic.List<(string Path, int DelayMs)> framesData, string nameID, ImageProcessingSettings settings)
         {
-            AppendLog($"convertGif called with {framesData.Count} entries for ID={nameID} (stub).");
+            AppendLog($"Converting GIF ({nameID}) with {framesData.Count} frames...");
 
             string yamlPalette = "\npalettes:" +
                             "\n  - name: my_palette" +
@@ -1022,33 +1022,83 @@ namespace HDPictureViewerConverter4
             File.WriteAllText("convimg.yaml", yamlCombined);
             Thread.Sleep(250);
 
-            LaunchConvimg();
+            LaunchConvimg(framesData.Count());
 
             // Verify expected number of .8xv files created (exclude the palette entry)
             int expected = framesData.Count(f => !Path.GetFileName(f.Path).Equals("forPalette.png", StringComparison.OrdinalIgnoreCase));
             if (Directory.GetFiles(Directory.GetCurrentDirectory(), "*.8xv").Length < expected)
             {
-                IOException e = new IOException("Convimg crash. Try restarting HD Picture Viewer Converter or save the picture as a separate .png file.");
+                IOException e = new IOException("Convimg crash. Check above for errors.");
                 throw e;
             }
 
             await Task.CompletedTask;
         }
 
-        private void LaunchConvimg()
+        private void LaunchConvimg(int imagesToConvert = 0)
         {
-            Process convimgRunning;
+            AppendLog("Generating calculator files using convimg. This may take a while...");
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                convimgRunning = Process.Start("convimg.exe");
+                // Windows normies freak out when they see a random console window appear.
+                // Hide the console window but pipe its output to the log window.
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "convimg.exe",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                using var process = new Process { StartInfo = psi };
+
+                //Update the progress bar as images are converted
+                Dispatcher.UIThread.InvokeAsync(() => ImageProgressBar.Value = 0);
+                double increment = 1.0;
+                if (imagesToConvert > 0)
+                    increment = 100.0 / (imagesToConvert * 3); //3 = .png + .8xv + compression statements per image
+
+                process.OutputDataReceived += async (s, e) =>
+                {
+                    if (e.Data != null)
+                    {
+                        // Only display errors.
+                        if (e.Data.Contains("error"))
+                        {
+                            AppendLog("convimg: " + e.Data);
+                        }
+                        if (e.Data.Contains("Compress"))
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() => ImageProgressBar.Value = Math.Min(100.0, ImageProgressBar.Value + (increment *.1)));
+                        }
+                        if (e.Data.Contains(".png'") || e.Data.Contains(".8xv"))
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() => ImageProgressBar.Value = Math.Min(100.0, ImageProgressBar.Value + increment));
+                        }
+                    }
+                };
+
+                process.ErrorDataReceived += (s, e) =>
+                {
+                    if (e.Data != null)
+                        AppendLog("convimg ERR: " + e.Data);
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                convimgRunning = Process.Start("convimg.osx");
+                Process convimgRunning = Process.Start("convimg.osx");
+                convimgRunning.WaitForExit();
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                convimgRunning = Process.Start("convimg.linux");
+                Process convimgRunning = Process.Start("convimg.linux");
+                convimgRunning.WaitForExit();
             }
             else
             {
@@ -1056,15 +1106,15 @@ namespace HDPictureViewerConverter4
                 return;
             }
 
-            convimgRunning.WaitForExit();
         }
 
         private void AppendLog(string message)
         {
             Dispatcher.UIThread.Post(() =>
             {
-                ImageLog.Text += DateTime.Now.ToString("HH:mm:ss") + " - " + message + Environment.NewLine;
+                ImageLog.Text += " - " + message + Environment.NewLine;
                 // optionally scroll - TextBox will show latest
+                ImageLog.CaretIndex = int.MaxValue;
             });
         }
 
