@@ -989,7 +989,7 @@ namespace HDPictureViewerConverter4
                     "\n    images:" +
                     "\n      - " + saveName +
                     "\n    transparent-index: 0" +
-                    "\n    compress: zx0";
+                    "\n    compress: lz4hc";
 
                 yamlOutputsImg +=
                     "\n  - type: appvar" +
