@@ -8,6 +8,12 @@
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\hdpicv_icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\hdpicv_icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.1" />

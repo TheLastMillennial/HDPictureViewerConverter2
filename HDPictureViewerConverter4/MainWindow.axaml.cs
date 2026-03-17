@@ -823,7 +823,6 @@ namespace HDPictureViewerConverter4
                     "\n    max-entries: " + numOfPaletteColors +
                     "\n    fixed-entries:" +
                     "\n      - color: { index: 1,   r: 0,   g: 0,   b: 0}" +
-                    "\n      - color: { index: 2, r: 255, g: 255, b: 255}" +
                     "\n    quality: 10" +
                     "\n    images:" +
                     "\n      - forPalette.png");
@@ -960,7 +959,6 @@ namespace HDPictureViewerConverter4
                             "\n    fixed-entries:" +
                             "\n      - color: { index: 0, r: 255, g: 0,   b: 255}" +
                             "\n      - color: { index: 1, r: 0,   g: 0,   b: 0  }" +
-                            "\n      - color: { index: 2, r: 255, g: 255, b: 255}" +
                             "\n    quality: 1" +
                             "\n    images:" +
                             "\n      - forPalette.png";

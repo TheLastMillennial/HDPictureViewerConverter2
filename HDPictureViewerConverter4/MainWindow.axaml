@@ -4,7 +4,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
         x:Class="HDPictureViewerConverter4.MainWindow"
-        Title="HDPictureViewerConverter4">
+        Title="HD Picture Viewer Converter"
+		Icon="/Assets/hdpicv_icon.ico">
   <DockPanel Margin="8">
     <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="8">
       <Button x:Name="AddPictureButton" Width="120" Click="AddPictureButton_Click" Background="#0078D7" Foreground="White">
