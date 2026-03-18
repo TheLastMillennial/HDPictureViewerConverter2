@@ -1,0 +1,127 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+        x:Class="HDPictureViewerConverter4.MainWindow"
+        Title="HD Picture Viewer Converter"
+		Icon="/Assets/hdpicv_icon.ico">
+  <DockPanel Margin="8">
+    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Spacing="8">
+      <Button x:Name="AddPictureButton" Width="120" Click="AddPictureButton_Click" Background="#0078D7" Foreground="White">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Data="M6,0 L10,0 L10,6 L16,6 L16,10 L10,10 L10,16 L6,16 L6,10 L0,10 L0,6 L6,6 Z" Fill="White" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Add Picture" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
+
+      <Button x:Name="StartConversionButton" Width="160" Click="StartConversionButton_Click" Background="#10893E" Foreground="White">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <Path Data="M4,2 L14,8 L4,14 Z" Fill="White" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Start Conversion" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
+
+      <Button x:Name="FindConvertedButton" Width="200" Click="FindConvertedButton_Click">
+        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+          <!-- Folder icon (16x16) -->
+          <Path Data="M2,5 L6,5 L8,7 L14,7 L14,16 L2,16 Z M3,8 L13,8" Fill="Black" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+          <TextBlock Text="Find Converted Pictures" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Button>
+    </StackPanel>
+
+    <Grid Margin="0,8,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="2*" />
+        <ColumnDefinition Width="3*" />
+      </Grid.ColumnDefinitions>
+
+      <!-- Queue -->
+      <Border Grid.Column="0" Margin="0,0,8,0" BorderBrush="Gray" BorderThickness="1" Padding="6">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+
+          <TextBlock Text="Queue" FontWeight="Bold" Margin="0,0,0,6" />
+
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="QueueItemsControl">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border BorderBrush="Gray" BorderThickness="1" Padding="6" Margin="4">
+                    <DockPanel>
+                      <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                        <TextBlock Text="{Binding FileName}"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                          <TextBlock Text="ID:" VerticalAlignment="Center"/> 
+                          <TextBox Width="60" MaxLength="2" Text="{Binding ID, Mode=TwoWay}" HorizontalAlignment="Left" Margin="6,0,0,0" />
+                          <Button Content="Remove" Click="RemoveQueueItem_Click" Margin="8,0,0,0"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </DockPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <!-- Settings -->
+      <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Padding="6">
+        <StackPanel>
+          <TextBlock Text="Settings" FontWeight="Bold" Margin="0,0,0,6" />
+          <TabControl>
+            <TabItem Header="Image Settings">
+              <StackPanel Margin="8" Spacing="8">
+                <TextBlock Text="Resize:"/> 
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <RadioButton x:Name="ResizeDoNot" Content="Do Not Resize" GroupName="ResizeGroup" ToolTip.Tip="Keep image dimensions. Image may be too big to fit on the calculator!"/>
+                  <RadioButton x:Name="ResizeMaintain" Content="Maintain Aspect Ratio" GroupName="ResizeGroup"  IsChecked="True" ToolTip.Tip="Resize image dimensions to be at most 320x240."/>
+                  <RadioButton x:Name="ResizeStretch" Content="Stretch to fit" GroupName="ResizeGroup" ToolTip.Tip ="Reisze image dimensions to be exactly 320x240." />
+                </StackPanel>
+
+                <TextBlock Text="Color Bit Level:"/> 
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <RadioButton x:Name="Colors2" Content="1 bit" GroupName="ColorGroup" IsEnabled="False" ToolTip.Tip="Black and White. Disabled due to bug."/>
+                  <RadioButton x:Name="Colors4" Content="2 bit" GroupName="ColorGroup" ToolTip.Tip="4 colors. Recommended for documents. Small file size."/>
+                  <RadioButton x:Name="Colors16" Content="4 bit" GroupName="ColorGroup" ToolTip.Tip="16 colors."/>
+                  <RadioButton x:Name="Colors256" Content="8 bit" GroupName="ColorGroup" IsChecked="True" ToolTip.Tip="256 colors. Recommended for most pictures."/>
+                  <RadioButton x:Name="Colors65536" Content="16 bit" GroupName="ColorGroup" ToolTip.Tip="65k colors. Recommended for detailed pictures with color gradients. Large file size."/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="Dither Level:" VerticalAlignment="Center" />
+                  <Slider x:Name="DitherSlider" Minimum="0" Maximum="1" Value="0.8" Width="200" TickFrequency="0.1" IsSnapToTickEnabled="True" Margin="8,0,0,0" ToolTip.Tip="Improves perceived color range. Higher values may increase file size. Recommend 0.8 for pictures and 0.0 for documents." />
+                  <TextBlock Text="{Binding Value, ElementName=DitherSlider, StringFormat='{}{0:F1}'}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+              </StackPanel>
+            </TabItem>
+
+            <TabItem Header="GIF Settings">
+              <StackPanel Margin="8" Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+					<TextBlock Text="Color Quality:" VerticalAlignment="Center" />
+					<Slider x:Name="PaletteSlider" Minimum="4" Maximum="256" Value="32" TickFrequency="4" IsSnapToTickEnabled="True" Width="240"  ToolTip.Tip="Higher increases picture quality. Lower decreases file size and improves playback speed. Recommended range: 16-64." />
+					<NumericUpDown Minimum="3" Maximum="256" Increment="1" Value="{Binding Value, ElementName=PaletteSlider, Mode=TwoWay}" VerticalAlignment="Center" ToolTip.Tip="Higher increases picture quality. Lower decreases file size and improves playback speed. Recommended range: 16-64." />
+                </StackPanel>
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+			<Separator></Separator>
+			
+			<StackPanel Margin="8" Spacing="8">
+			    <TextBlock Text="Progress:" />
+			    <ProgressBar x:Name="ImageProgressBar" Minimum="0" Maximum="100" Height="18" />
+			    <TextBlock Text="Log:" />
+			    <TextBox x:Name="ImageLog" AcceptsReturn="True" Height = "150" VerticalAlignment="Stretch" IsReadOnly="True"/>
+			    <TextBlock Text="TheLastMillennial - 2026" HorizontalAlignment ="Right"/>
+			</StackPanel>
+        </StackPanel>
+      </Border>
+    </Grid>
+  </DockPanel>
+</Window>
